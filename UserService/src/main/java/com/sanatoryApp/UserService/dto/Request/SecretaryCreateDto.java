@@ -1,0 +1,28 @@
+package com.sanatoryApp.UserService.dto.Request;
+import com.sanatoryApp.UserService.entity.Secretary;
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+
+public class SecretaryCreateDto {
+    @NotBlank(message = "First Name is mandatory")
+    private String firstName;
+
+    @NotBlank(message = "Last Name is mandatory")
+    private String lastName;
+
+    @Email(message = "Invalid Format")
+    @NotBlank(message = "Email is mandatory")
+    private String email;
+    
+
+    public Secretary toEntity(){
+        Secretary secretary=new Secretary();
+        secretary.setFirstName(firstName);
+        secretary.setLastName(lastName);
+        secretary.setEmail(email);
+        
+        return secretary;
+    }
+}

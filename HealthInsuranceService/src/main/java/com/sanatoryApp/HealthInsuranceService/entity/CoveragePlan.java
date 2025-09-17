@@ -7,24 +7,22 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "Health_Insurances")
+@Table(name = "Coverages_plans")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class HealthInsurance {
+public class CoveragePlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String companyName;
     @Column(unique = true)
-    private int companyCode;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private Long healthInsuranceId;
     @Column(unique = true)
-    private String phoneNumber;
-    @Column(unique = true)
-    private String email;
-    private boolean isActive;
-
-
+    private String name;
+    private String description;
+    private double coverageValue;
+    private  boolean isActive;
 }

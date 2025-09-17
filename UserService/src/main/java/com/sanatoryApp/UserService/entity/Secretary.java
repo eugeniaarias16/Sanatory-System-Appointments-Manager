@@ -1,4 +1,4 @@
-package com.sanatoryApp.HealthInsuranceService.entity;
+package com.sanatoryApp.UserService.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,25 +6,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "Health_Insurances")
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
-public class HealthInsurance {
+@Entity
+@Table(name="secretaries")
+public class Secretary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String companyName;
-    @Column(unique = true)
-    private int companyCode;
-    @Column(unique = true)
-    private String phoneNumber;
+    private String firstName;
+    private String lastName;
     @Column(unique = true)
     private String email;
-    private boolean isActive;
-
-
 }
