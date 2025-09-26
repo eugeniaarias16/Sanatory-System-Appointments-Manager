@@ -6,8 +6,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
-@Table(name = "Health_Insurances")
+@Table(name = "health_insurances")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -26,5 +28,12 @@ public class HealthInsurance {
     private String email;
     private boolean isActive;
 
+    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JoinColumn(name = "health_insurance_id")
+    private List<CoveragePlan>coveragePlans;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "health_insurance_id")
+    private List<PatientInsurance>patientInsurances;
 
 }

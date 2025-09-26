@@ -1,6 +1,6 @@
 package com.sanatoryApp.AppointmentService.entity;
 
-import lombok.RequiredArgsConstructor;
+
 
 public enum AppointmentStatus {
     SCHEDULED("Scheduled"),

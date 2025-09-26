@@ -19,10 +19,16 @@ public class AppointmentType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private String name;
+
     private String description;
+    @Column(nullable = false)
     private int durationMin;
+    @Column(nullable = false)
     private int bufferTimeMin;
+    @Column(nullable = false)
     private BigDecimal basePrice;
+    @Column(nullable = false)
     private boolean isActive;
 }

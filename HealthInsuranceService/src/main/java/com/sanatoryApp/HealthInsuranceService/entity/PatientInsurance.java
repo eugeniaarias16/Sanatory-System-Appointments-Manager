@@ -14,22 +14,37 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "Patients_Insurance")
+@Table(name = "patients_insurance")
 public class PatientInsurance {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private Long credentialNumber;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private Long patientId;
+
+    @Column(unique = true, nullable = false)
+    private String credentialNumber;
+
+    @Column(nullable = false)
     private Long healthInsuranceId;
+
     private Long coveragePlanId;
+
+    @Column(nullable = false,updatable = false)
     private LocalDate createdAt;
+
     private LocalDate expirationDate;
+
+    @Column(nullable = false,columnDefinition = "boolean default true")
     private boolean isActive;
 
-    private void setCreatedDate(){
-        createdAt=LocalDate.now();
+    @PrePersist
+    protected void onCreate(){
+        if(createdAt==null){
+            createdAt=LocalDate.now();
+        }
     }
-
-
 
 }
