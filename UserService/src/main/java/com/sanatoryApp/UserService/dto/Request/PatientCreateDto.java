@@ -5,13 +5,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.Data;
 
+@Data
 public class PatientCreateDto {
     @NotBlank(message = "First Name is mandatory")
     private String firstName;
 
     @NotBlank(message = "Last Name is mandatory")
     private String lastName;
+
+    @NotBlank(message = "Dni is mandatory")
+    private String dni;
 
     @Email(message = "Invalid Format")
     @NotBlank(message = "Email is mandatory")
@@ -26,6 +31,7 @@ public class PatientCreateDto {
         Patient patient=new Patient();
         patient.setFirstName(firstName);
         patient.setLastName(lastName);
+        patient.setDni(dni);
         patient.setEmail(email);
         patient.setPhoneNumber(phoneNumber);
         return patient;

@@ -3,8 +3,9 @@ import com.sanatoryApp.UserService.entity.Secretary;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
-
+@Data
 public class SecretaryCreateDto {
     @NotBlank(message = "First Name is mandatory")
     private String firstName;
