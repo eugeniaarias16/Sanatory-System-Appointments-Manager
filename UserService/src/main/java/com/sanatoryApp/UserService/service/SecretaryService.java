@@ -35,6 +35,7 @@ public class SecretaryService implements ISecretaryService{
         return secretaryRepository.existsByEmail(email);
     }
 
+    @Transactional
     @Override
     public SecretaryResponseDto createSecretary(SecretaryCreateDto dto) {
         if(existsByEmail(dto.getEmail())){
@@ -47,7 +48,7 @@ public class SecretaryService implements ISecretaryService{
         return SecretaryResponseDto.fromEntity(saved);
 
     }
-
+    @Transactional
     @Override
     public SecretaryResponseDto updateSecretaryById(Long id, Map<String, Object> updates) {
         Secretary existingSecretary=secretaryRepository.findById(id)
@@ -69,7 +70,7 @@ public class SecretaryService implements ISecretaryService{
         Secretary saved=secretaryRepository.save(existingSecretary);
         return SecretaryResponseDto.fromEntity(saved);
     }
-
+    @Transactional
     @Override
     public void deleteSecretaryById(Long id) {
         findSecretaryById(id);

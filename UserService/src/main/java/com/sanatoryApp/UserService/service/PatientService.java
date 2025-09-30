@@ -25,9 +25,10 @@ public class PatientService implements IPatientService{
         return PatientResponseDto.fromEntity(patient);
     }
 
+    @Transactional
     @Override
     public PatientResponseDto updatePatientById(Long id, Map<String, Object> updates) {
-        log.debug("Verifying if patient with id {} exists",id);
+        log.debug("Verifying if patient with id {} exists...",id);
         Patient existingPatient=patientRepository.findById(id)
                 .orElseThrow(()->new ResourceNotFound("Patient not found found with id: "+id));
         log.debug("Updating patient with id {}...",id);
@@ -63,6 +64,7 @@ public class PatientService implements IPatientService{
         return PatientResponseDto.fromEntity(saved);
     }
 
+    @Transactional
     @Override
     public PatientResponseDto createPatient(PatientCreateDto dto) {
         String email=dto.getEmail();
@@ -84,6 +86,7 @@ public class PatientService implements IPatientService{
         return PatientResponseDto.fromEntity(saved);
     }
 
+    @Transactional
     @Override
     public void deletePatientById(Long id) {
         Patient existingPatient=patientRepository.findById(id)
@@ -111,16 +114,19 @@ public class PatientService implements IPatientService{
 
     @Override
     public boolean existByDni(String dni) {
+        log.debug("Verifying if Patient with dni {} exists...",dni);
         return patientRepository.existByDni(dni);
     }
 
     @Override
     public boolean existsByEmail(String email) {
+        log.debug("Verifying if Patient with email {} exists...",email);
         return patientRepository.existsByEmail(email);
     }
 
     @Override
     public boolean existsByPhoneNumber(String phoneNumber) {
+        log.debug("Verifying if Patient with phoneNumber {} exists.",phoneNumber);
         return patientRepository.existsByPhoneNumber(phoneNumber);
     }
 }

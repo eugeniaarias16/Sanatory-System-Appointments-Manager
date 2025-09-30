@@ -36,7 +36,7 @@ public class CoveragePlanCreateDto {
         CoveragePlan coveragePlan=new CoveragePlan();
         coveragePlan.setName(name);
         coveragePlan.setDescription(description);
-        coveragePlan.setCoverageValue(coverageValue);
+        coveragePlan.setCoverageValuePercentage(coverageValue);
         coveragePlan.setActive(true);
         return coveragePlan;
     }

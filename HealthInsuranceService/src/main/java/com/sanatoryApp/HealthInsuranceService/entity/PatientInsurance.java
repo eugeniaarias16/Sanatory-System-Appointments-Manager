@@ -35,10 +35,9 @@ public class PatientInsurance {
     @Column(nullable = false,updatable = false)
     private LocalDate createdAt;
 
-    private LocalDate expirationDate;
 
     @Column(nullable = false,columnDefinition = "boolean default true")
-    private boolean isActive;
+    private Boolean isActive;
 
     @PrePersist
     protected void onCreate(){

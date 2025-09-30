@@ -14,7 +14,7 @@ public record HealthInsuranceResponseDto(
         String companyName,
 
         @Schema(description = "Company code")
-        int companyCode,
+        Long companyCode,
 
         @Schema(description = "Contact telephone number")
         String phoneNumber,

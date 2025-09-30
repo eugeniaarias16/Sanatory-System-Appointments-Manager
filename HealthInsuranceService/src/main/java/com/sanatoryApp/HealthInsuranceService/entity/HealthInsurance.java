@@ -21,7 +21,7 @@ public class HealthInsurance {
     private Long id;
     private String companyName;
     @Column(unique = true)
-    private int companyCode;
+    private Long companyCode;
     @Column(unique = true)
     private String phoneNumber;
     @Column(unique = true)
