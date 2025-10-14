@@ -29,5 +29,7 @@ public class CalendarException {
     private ExceptionType exceptionType;
     private String reason;
     @Column(nullable = false)
-    boolean isActive;
+    private boolean isGlobal;
+    @Column(nullable = false)
+    private boolean isActive;
 }

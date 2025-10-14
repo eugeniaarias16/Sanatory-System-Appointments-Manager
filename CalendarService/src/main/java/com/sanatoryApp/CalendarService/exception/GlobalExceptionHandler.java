@@ -32,4 +32,11 @@ public class GlobalExceptionHandler {
         error.put("message",ex.getMessage());
         return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(InvalidTimeRangeException.class)
+    public ResponseEntity<Map<String,String>>handleInvalidTimeRange(InvalidTimeRangeException ex){
+        Map error=new HashMap<>();
+        error.put("error","Invalid TimeRange Exception");
+        error.put("message",ex.getMessage());
+        return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+    }
 }

@@ -28,13 +28,19 @@ public class PatientInsuranceService implements IPatientInsuranceService{
                 .orElseThrow(()->new ResourceNotFound("Patient Insurance not found with id: "+id));
         return PatientInsuranceResponseDto.fromEntity(patientInsurance);
     }
-
+    @Transactional
     @Override
     public PatientInsuranceResponseDto createPatientInsurance(PatientInsuranceCreateDto dto) {
-        return null;
+        //verificar si los ids existen- comunicacion entre microservicios
+
+        PatientInsurance patientInsurance=dto.toEntity();
+        PatientInsurance saved=patientInsuranceRepository.save(patientInsurance);
+        return  PatientInsuranceResponseDto.fromEntity(saved);
+
     }
 
     //The only field that could be updated is Coverage Plan
+    @Transactional
     @Override
     public PatientInsuranceResponseDto updatePatientInsuranceById(Long id, Long coveragePlanId) {
         log.debug("Attempting to update the plan for the patient with the ID: {}",id);
@@ -51,6 +57,7 @@ public class PatientInsuranceService implements IPatientInsuranceService{
     }
 
     @Override
+    @Transactional
     public void deletePatientInsuranceById(Long id) {
         log.debug("Attempting to delete Patient Insurance with id {}",id);
         PatientInsurance patientInsurance=patientInsuranceRepository.findById(id)

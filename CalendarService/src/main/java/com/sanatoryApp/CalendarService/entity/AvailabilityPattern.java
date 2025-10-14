@@ -33,4 +33,12 @@ public class AvailabilityPattern {
     @Column(nullable = false)
     private LocalTime endTime;
 
+    @Column(nullable = false)
+    private boolean isActive=true;
+
+    public void setIsActive(boolean isActive){
+        this.isActive=isActive;
+    }
+
+
 }

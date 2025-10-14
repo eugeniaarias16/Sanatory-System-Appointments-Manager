@@ -1,0 +1,66 @@
+package com.sanatoryApp.CalendarService.repository;
+
+import com.sanatoryApp.CalendarService.entity.AvailabilityPattern;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.util.List;
+
+public interface IAvailabilityPatternRepository  extends JpaRepository<AvailabilityPattern,Long> {
+    List<AvailabilityPattern> findByDoctorCalendarId(Long id);
+
+    //Find patterns for a specific day of the week in a specific place
+    List<AvailabilityPattern> findByDoctorCalendarIdAndDayOfWeekAndIsActiveTrue(
+            Long calendarId,
+            DayOfWeek dayOfWeek
+    );
+
+    //Find patterns across multiple calendars for the same doctor
+    @Query( "SELECT ap FROM AvailabilityPattern ap "+
+            "WHERE ap.doctorCalendarId IN("+
+                "SELECT dc.id FROM DoctorCalendar dc"+
+                "WHERE dc.doctorId=:doctorId AND dc.isActive=true)"+
+            "AND ap.isActive=true"+
+            "ORDER BY ap.dayOfWeek, ap.startTime"
+    )
+    List<AvailabilityPattern>findByDoctorId(@Param("doctorId")Long doctorId);
+
+
+    //Doctor's patterns on a specific day (ALL locations)
+    @Query( "SELECT ap FROM AvailabilityPattern ap "+
+            "WHERE ap.doctorCalendarId IN("+
+                "SELECT dc.id FROM DoctorCalendar dc"+
+                "WHERE dc.doctorId=:doctorId AND dc.isActive=true)"+
+            "AND ap.dayOfWeek=:dayOfWeek"+
+            "AND ap.isActive=true"+
+            "ORDER BY ap.startTime"
+    )
+    List<AvailabilityPattern>findByDoctorIdAndDay(@Param("doctorId")Long doctorId,
+                                                  @Param("dayOfWeek")DayOfWeek dayOfWeek);
+
+
+    /* Check for schedule overlaps with ANY doctor's calendar
+      (including the current calendar and other calendars belonging to the same doctor)  */
+    @Query("SELECT CASE WHEN EXISTS (" +
+            "SELECT 1 FROM AvailabilityPattern ap " +
+            "WHERE ap.doctorCalendarId IN " +
+            "  (SELECT dc2.id FROM DoctorCalendar dc2 " +
+            "   WHERE dc2.doctorId = " +
+            "     (SELECT dc.doctorId FROM DoctorCalendar dc WHERE dc.id = :calendarId) " +
+            "   AND dc2.isActive = true) " +
+            "AND ap.dayOfWeek = :dayOfWeek " +
+            "AND ap.isActive = true " +
+            "AND ap.id != :excludeId " +
+            "AND (ap.startTime < :endTime AND ap.endTime > :startTime)" +
+            ") THEN true ELSE false END")
+    boolean hasOverlappingPattern(
+            @Param("calendarId") Long calendarId,
+            @Param("dayOfWeek") DayOfWeek dayOfWeek,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("excludeId") Long excludeId
+    );
+}
