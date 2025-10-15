@@ -1,10 +1,16 @@
 package com.sanatoryApp.CalendarService.entity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.ZoneId;
 import java.util.List;
-
+@Data
 @Entity
 @Table(name = "doctors_calendar")
+@AllArgsConstructor
+@NoArgsConstructor
 public class DoctorCalendar {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

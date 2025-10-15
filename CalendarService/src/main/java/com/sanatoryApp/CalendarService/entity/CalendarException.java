@@ -30,6 +30,8 @@ public class CalendarException {
     private String reason;
     @Column(nullable = false)
     private boolean isGlobal;
+    @Column(nullable = false, name = "is_full_day")
+    private boolean isFullDay;
     @Column(nullable = false)
     private boolean isActive;
 }

@@ -3,10 +3,12 @@ package com.sanatoryApp.CalendarService.dto.Request;
 import com.sanatoryApp.CalendarService.entity.CalendarException;
 import com.sanatoryApp.CalendarService.entity.ExceptionType;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+@Data
 public class CalendarExceptionCreateDto {
         @NotNull
         private Long doctorCalendarId;
@@ -29,7 +31,7 @@ public class CalendarExceptionCreateDto {
                 calendarException.setStartTime(startTime);
                 calendarException.setEndTime(endTime);
                 calendarException.setExceptionType(exceptionType);
-                calendarException.setReason(reason);
+                calendarException.setReason(reason.toLowerCase());
                 calendarException.setGlobal(isGlobal);
 
                 return calendarException;

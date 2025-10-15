@@ -4,18 +4,20 @@ import com.sanatoryApp.CalendarService.dto.Request.AvailabilityPatternCreateDto;
 import com.sanatoryApp.CalendarService.dto.Request.AvailabilityPatternUpdateDto;
 import com.sanatoryApp.CalendarService.dto.Response.AvailabilityPatternResponseDto;
 import com.sanatoryApp.CalendarService.entity.AvailabilityPattern;
-import com.sanatoryApp.CalendarService.exception.InvalidTimeRangeException;
 import com.sanatoryApp.CalendarService.exception.ResourceNotFound;
 import com.sanatoryApp.CalendarService.repository.IAvailabilityPatternRepository;
 import com.sanatoryApp.CalendarService.repository.IDoctorCalendarRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
-import java.time.LocalTime;
 import java.util.List;
+
+import static com.sanatoryApp.CalendarService.utils.TimeValidationUtils.validateTimeRange;
+
 
 @Service
 @Slf4j
@@ -148,11 +150,5 @@ public class AvailabilityPatternService implements IAvailabilityPatternService {
 
 
 
-    private void validateTimeRange(LocalTime startTime, LocalTime endTime){
-        log.debug("Validating if end time is after start time...");
-        if(endTime.isBefore(startTime)|| endTime.equals(startTime)){
-            throw new InvalidTimeRangeException("End time must be after start time.");
-        }
-        log.debug("End time is correct.");
-    }
+
 }
