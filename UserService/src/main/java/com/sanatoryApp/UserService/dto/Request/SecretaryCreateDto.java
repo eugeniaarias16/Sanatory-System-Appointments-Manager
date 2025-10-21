@@ -7,6 +7,9 @@ import lombok.Data;
 
 @Data
 public class SecretaryCreateDto {
+    @NotBlank(message = "Dni is mandatory")
+    private String dni;
+
     @NotBlank(message = "First Name is mandatory")
     private String firstName;
 
@@ -20,9 +23,10 @@ public class SecretaryCreateDto {
 
     public Secretary toEntity(){
         Secretary secretary=new Secretary();
+        secretary.setDni(dni.trim());
         secretary.setFirstName(firstName);
         secretary.setLastName(lastName);
-        secretary.setEmail(email);
+        secretary.setEmail(email.trim().toLowerCase());
         
         return secretary;
     }

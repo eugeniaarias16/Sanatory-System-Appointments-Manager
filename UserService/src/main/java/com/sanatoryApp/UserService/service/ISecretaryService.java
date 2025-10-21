@@ -1,18 +1,24 @@
 package com.sanatoryApp.UserService.service;
 
 import com.sanatoryApp.UserService.dto.Request.SecretaryCreateDto;
+import com.sanatoryApp.UserService.dto.Request.SecretaryUpdateDto;
 import com.sanatoryApp.UserService.dto.Response.SecretaryResponseDto;
 
-import java.util.Map;
+import java.util.List;
 
 public interface ISecretaryService  {
 
     /* BASIC CRUD */
+    List<SecretaryResponseDto> findAll();
     SecretaryResponseDto findSecretaryById(Long id);
     SecretaryResponseDto createSecretary(SecretaryCreateDto dto);
-    SecretaryResponseDto updateSecretaryById(Long id, Map<String,Object>update);
+    SecretaryResponseDto updateSecretaryById(Long id, SecretaryUpdateDto dto);
+    SecretaryResponseDto updateSecretaryByDni(String dni, SecretaryUpdateDto dto);
     void deleteSecretaryById(Long id);
+    void deleteSecretaryByDni(String dni);
 
     SecretaryResponseDto findSecretaryByEmail(String email);
+    SecretaryResponseDto findSecretaryByDni(String dni);
     boolean existsByEmail(String email);
+    boolean existsByDni(String dni);
 }

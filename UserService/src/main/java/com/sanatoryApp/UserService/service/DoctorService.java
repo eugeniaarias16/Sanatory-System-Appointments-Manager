@@ -1,6 +1,7 @@
 package com.sanatoryApp.UserService.service;
 
 import com.sanatoryApp.UserService.dto.Request.DoctorCreateDto;
+import com.sanatoryApp.UserService.dto.Request.DoctorUpdateDto;
 import com.sanatoryApp.UserService.dto.Response.DoctorResponseDto;
 import com.sanatoryApp.UserService.entity.Doctor;
 import com.sanatoryApp.UserService.exception.DuplicateResourceException;
@@ -25,6 +26,14 @@ public class DoctorService implements IDoctorService{
     private final IDoctorRepository doctorRepository;
 
     @Override
+    public List<DoctorResponseDto> findAll() {
+        List<Doctor>list=doctorRepository.findAll();
+        return list.stream()
+                .map(DoctorResponseDto::fromEntity)
+                .toList();
+    }
+
+    @Override
     public DoctorResponseDto findDoctorById(Long id) {
         log.debug("Attempting to find doctor by Id: {}",id);
         Doctor doctor=doctorRepository.findById(id)
@@ -32,37 +41,67 @@ public class DoctorService implements IDoctorService{
         return DoctorResponseDto.fromEntity(doctor);
 
     }
+
     @Transactional
     @Override
-    public DoctorResponseDto updateDoctorById(Long id, Map<String, Object> updates) {
-        log.debug("Attempting to update doctor by Id: {}",id);
-        Doctor existingDoctor=doctorRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFound("Doctor not found with id: "+id));
+    public DoctorResponseDto updateDoctorById(Long id, DoctorUpdateDto dto) {
+        log.debug("Updating doctor with id: {}", id);
 
-        updates.forEach((key,value)->{
-            switch (key){
-                case "firstName"->existingDoctor.setFirstName((String) value);
-                case "lastName"->existingDoctor.setLastName((String) value);
-                case "email"->{
-                    String email=(String) value;
-                    if(existByEmail(email)){
-                        throw new DuplicateResourceException("Doctor already exists with email: "+email);
-                    }
-                    existingDoctor.setEmail(email);
+        //Search for existing doctor
+        Doctor existingDoctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Doctor not found with id: " + id));
+
+        // Update firstName
+        if (dto.firstName() != null && !dto.firstName().trim().isEmpty()) {
+            existingDoctor.setFirstName(dto.firstName().trim());
+        }
+
+        // Update lastName
+        if (dto.lastName() != null && !dto.lastName().trim().isEmpty()) {
+            existingDoctor.setLastName(dto.lastName().trim());
+        }
+
+        // Update email (validate duplicates only if changed)
+        if (dto.email() != null && !dto.email().trim().isEmpty()) {
+            String newEmail = dto.email().trim().toLowerCase();
+
+            // Only validate if the email is different from the current one
+            if (!existingDoctor.getEmail().equalsIgnoreCase(newEmail)) {
+                if (existByEmail(newEmail)) {
+                    log.error("Duplicate email attempt: {}", newEmail);
+                    throw new DuplicateResourceException(
+                            "Doctor already exists with email: " + newEmail
+                    );
                 }
-                case "phoneNumber"->{
-                    String phoneNumber=(String) value;
-                    if(existByPhoneNumber(phoneNumber)){
-                        throw new DuplicateResourceException("Doctor already exists with phone number: "+phoneNumber);
-                    }
-                    existingDoctor.setPhoneNumber(phoneNumber);
-                }
+                existingDoctor.setEmail(newEmail);
             }
-        });
-        Doctor saved=doctorRepository.save(existingDoctor);
-        log.info("Doctor with id {} successfully updated with values: {}",id,updates.values());
+        }
+
+        // Update phoneNumber (validate duplicates only if changed)
+        if (dto.phoneNumber() != null && !dto.phoneNumber().trim().isEmpty()) {
+            String newPhone = dto.phoneNumber().trim();
+
+            // Only validate if the phone number is different from the current one.
+            if (!existingDoctor.getPhoneNumber().equals(newPhone)) {
+                if (existByPhoneNumber(newPhone)) {
+                    log.error("Duplicate phone number attempt: {}", newPhone);
+                    throw new DuplicateResourceException(
+                            "Doctor already exists with phone number: " + newPhone
+                    );
+                }
+                existingDoctor.setPhoneNumber(newPhone);
+            }
+        }
+
+        // Save changes
+        Doctor saved = doctorRepository.save(existingDoctor);
+        log.info("Doctor with id {} successfully updated", id);
+
         return DoctorResponseDto.fromEntity(saved);
     }
+
+
+
     @Transactional
     @Override
     public DoctorResponseDto createDoctor(DoctorCreateDto dto) {
@@ -92,8 +131,10 @@ public class DoctorService implements IDoctorService{
     @Override
     public List<DoctorResponseDto> findDoctorByFirstName(String firstName) {
         log.debug("Attempting to find doctor by First Name: {}",firstName);
-        List<Doctor> doctorList=doctorRepository.findDoctorByFirstNameIgnoreCase(firstName)
-                .orElseThrow(()-> new ResourceNotFound("No Doctor was found with first name: "+firstName));
+        List<Doctor> doctorList=doctorRepository.findDoctorByFirstNameIgnoreCase(firstName);
+        if(doctorList.isEmpty()){
+            log.info("No Doctor was found with first name: {} ",firstName);
+        }
         return doctorList.stream()
                 .map(DoctorResponseDto::fromEntity)
                 .toList();
@@ -102,8 +143,10 @@ public class DoctorService implements IDoctorService{
     @Override
     public List<DoctorResponseDto> findDoctorByLastName(String lastName) {
         log.debug("Attempting to find doctor by Last Name: {}",lastName);
-        List<Doctor>doctorList=doctorRepository.findDoctorByLastNameIgnoreCase(lastName)
-                .orElseThrow(()->new ResourceNotFound("No doctor was found with last name: "+lastName));
+        List<Doctor>doctorList=doctorRepository.findDoctorByLastNameIgnoreCase(lastName);
+        if(doctorList.isEmpty()){
+            log.info("No Doctor was found with last name: {} ",lastName);
+        }
         return doctorList.stream()
                 .map(DoctorResponseDto::fromEntity)
                 .toList();

@@ -17,6 +17,8 @@ public class Secretary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true)
+    private String dni;
     private String firstName;
     private String lastName;
     @Column(unique = true)

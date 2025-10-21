@@ -1,6 +1,7 @@
 package com.sanatoryApp.UserService.service;
 
 import com.sanatoryApp.UserService.dto.Request.PatientCreateDto;
+import com.sanatoryApp.UserService.dto.Request.PatientUpdateDto;
 import com.sanatoryApp.UserService.dto.Response.PatientResponseDto;
 import com.sanatoryApp.UserService.entity.Patient;
 import com.sanatoryApp.UserService.exception.DuplicateResourceException;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 @Service
 @Slf4j
@@ -18,6 +20,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PatientService implements IPatientService{
    private final IPatientRepository patientRepository;
+
+    @Override
+    public List<PatientResponseDto> findAll() {
+        List<Patient>list=patientRepository.findAll();
+        return list.stream()
+                .map(PatientResponseDto::fromEntity)
+                .toList();
+    }
+
     @Override
     public PatientResponseDto findPatientById(Long id) {
         Patient patient=patientRepository.findById(id)
@@ -27,40 +38,140 @@ public class PatientService implements IPatientService{
 
     @Transactional
     @Override
-    public PatientResponseDto updatePatientById(Long id, Map<String, Object> updates) {
+    public PatientResponseDto updatePatientById(Long id, PatientUpdateDto dto) {
         log.debug("Verifying if patient with id {} exists...",id);
         Patient existingPatient=patientRepository.findById(id)
                 .orElseThrow(()->new ResourceNotFound("Patient not found found with id: "+id));
         log.debug("Updating patient with id {}...",id);
-        updates.forEach((key,value)->{
-            switch (key){
-                case"dni"->{
-                    String dni=(String) value;
-                    if(existByDni(dni)){
-                        throw new DuplicateResourceException("Patient already exit with dni: "+dni);
-                    }
-                    existingPatient.setDni(dni);
+
+        //updating dni
+        if(dto.dni()!=null && !dto.dni().isEmpty()){
+            String newDni=dto.dni().trim();
+
+            //verify if new dni and old dni are equals
+            if(!existingPatient.getDni().equalsIgnoreCase(newDni)){
+
+                //verifying if dni already exists
+                if(existByDni(newDni)){
+                    throw new DuplicateResourceException("Already exists Patient with dni: "+newDni);
                 }
-                case "firstName"->existingPatient.setFirstName((String) value);
-                case "lastName"->existingPatient.setLastName((String)value);
-                case "email"->{
-                    String email=(String) value;
-                    if(existsByEmail(email)){
-                        throw new DuplicateResourceException("Patient already exists with email: "+email);
-                    }
-                existingPatient.setEmail(email);
-                }
-                case "phoneNumber"->{
-                    String phoneNumber=(String) value;
-                    if (existsByPhoneNumber(phoneNumber)){
-                        throw new DuplicateResourceException("Patient already exists with phone  number: "+phoneNumber);
-                    }
-                    existingPatient.setPhoneNumber(phoneNumber);
-                }
+                existingPatient.setDni(newDni);
             }
-        });
+        }
+
+        //updating firstname
+        if(dto.firstName()!=null && !dto.firstName().isEmpty()){
+            existingPatient.setFirstName(dto.firstName().trim());
+        }
+
+        //updating lastname
+        if(dto.lastName()!=null && !dto.lastName().isEmpty()){
+            existingPatient.setLastName(dto.lastName());
+        }
+
+
+        //updating email
+        if(dto.email()!=null && !dto.email().isEmpty()){
+            String newEmail= dto.email().trim().toLowerCase();
+
+            //verify if new email and old email are equals
+            if(!existingPatient.getEmail().equalsIgnoreCase(newEmail)){
+
+                //verifying if new email already exists
+                if(existsByEmail(newEmail)){
+                    throw new DuplicateResourceException("Already exists Patient with email: "+newEmail);
+                }
+                //updating email
+                existingPatient.setEmail(newEmail);
+            }
+        }
+
+        //updating phone number
+        if(dto.phoneNumber()!=null && !dto.phoneNumber().isEmpty()){
+            String newPhoneNumber= dto.phoneNumber().trim();
+
+            //verifying if old phone number and new phone number are equals
+            if(!existingPatient.getPhoneNumber().equals(newPhoneNumber)){
+               //verifying if new phone number already exists
+                if(existsByPhoneNumber(newPhoneNumber)){
+                    throw new DuplicateResourceException("Already exists Patient with phone number: "+newPhoneNumber);
+                }
+                //updating phone number
+                existingPatient.setPhoneNumber(newPhoneNumber);
+            }
+        }
+
         Patient saved=patientRepository.save(existingPatient);
         log.info("Patient with id {} successfully updated.",id);
+        return PatientResponseDto.fromEntity(saved);
+    }
+
+    @Override
+    public PatientResponseDto updatePatientByDni(String dni, PatientUpdateDto dto) {
+        log.debug("Verifying if patient with dni {} exists...",dni);
+        Patient existingPatient=patientRepository.findPatientByDni(dni)
+                .orElseThrow(()->new ResourceNotFound("Patient not found found with dni: "+dni));
+        log.debug("Updating patient with dni {}...",dni);
+
+        //updating dni
+        if(dto.dni()!=null && !dto.dni().isEmpty()){
+            String newDni=dto.dni().trim();
+
+            //verify if new dni and old dni are equals
+            if(!existingPatient.getDni().equalsIgnoreCase(newDni)){
+
+                //verifying if dni already exists
+                if(existByDni(newDni)){
+                    throw new DuplicateResourceException("Already exists Patient with dni: "+newDni);
+                }
+                existingPatient.setDni(newDni);
+            }
+        }
+
+        //updating firstname
+        if(dto.firstName()!=null && !dto.firstName().isEmpty()){
+            existingPatient.setFirstName(dto.firstName().trim());
+        }
+
+        //updating lastname
+        if(dto.lastName()!=null && !dto.lastName().isEmpty()){
+            existingPatient.setLastName(dto.lastName());
+        }
+
+
+        //updating email
+        if(dto.email()!=null && !dto.email().isEmpty()){
+            String newEmail= dto.email().trim().toLowerCase();
+
+            //verify if new email and old email are equals
+            if(!existingPatient.getEmail().equalsIgnoreCase(newEmail)){
+
+                //verifying if new email already exists
+                if(existsByEmail(newEmail)){
+                    throw new DuplicateResourceException("Already exists Patient with email: "+newEmail);
+                }
+                //updating email
+                existingPatient.setEmail(newEmail);
+            }
+        }
+
+        //updating phone number
+        if(dto.phoneNumber()!=null && !dto.phoneNumber().isEmpty()){
+            String newPhoneNumber= dto.phoneNumber().trim();
+
+            //verifying if old phone number and new phone number are equals
+            if(!existingPatient.getPhoneNumber().equals(newPhoneNumber)){
+                //verifying if new phone number already exists
+                if(existsByPhoneNumber(newPhoneNumber)){
+                    throw new DuplicateResourceException("Already exists Patient with phone number: "+newPhoneNumber);
+                }
+                //updating phone number
+                existingPatient.setPhoneNumber(newPhoneNumber);
+            }
+        }
+
+        Patient saved=patientRepository.save(existingPatient);
+        log.info("Patient with dni {} successfully updated.",dni);
         return PatientResponseDto.fromEntity(saved);
     }
 
@@ -92,6 +203,14 @@ public class PatientService implements IPatientService{
         Patient existingPatient=patientRepository.findById(id)
                 .orElseThrow(()->new ResourceNotFound("Patient not found found with id: "+id));
         log.info("Deleting patient with id {}...",id);
+        patientRepository.delete(existingPatient);
+    }
+
+    @Override
+    public void deletePatientByDni(String dni) {
+        Patient existingPatient=patientRepository.findPatientByDni(dni)
+                .orElseThrow(()->new ResourceNotFound("Patient not found found with dni: "+dni));
+        log.info("Deleting patient with dni {}...",dni);
         patientRepository.delete(existingPatient);
     }
 
