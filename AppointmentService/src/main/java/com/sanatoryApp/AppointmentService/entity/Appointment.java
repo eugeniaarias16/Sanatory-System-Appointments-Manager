@@ -26,6 +26,9 @@ public class Appointment {
     private Long doctorId;
 
     @Column(nullable = false)
+    private Long doctorCalendarId;
+
+    @Column(nullable = false)
     private Long patientId;
 
 
@@ -45,7 +48,7 @@ public class Appointment {
     @Column(nullable = false)
     private BigDecimal consultationCost;
 
-    private  double coveragePercentage;
+    private  BigDecimal coveragePercentage;
 
     @Column(nullable = false)
     private  BigDecimal amountToPay;
@@ -63,8 +66,8 @@ public class Appointment {
         }
         if(status==null){
             status=AppointmentStatus.SCHEDULED;
-        }
 
+        }
     }
 
 }

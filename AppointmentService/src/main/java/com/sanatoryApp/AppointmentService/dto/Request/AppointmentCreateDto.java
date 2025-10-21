@@ -1,6 +1,5 @@
 package com.sanatoryApp.AppointmentService.dto.Request;
 
-import com.sanatoryApp.AppointmentService.entity.Appointment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +9,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class AppointmentCreateRequestDto {
+public class AppointmentCreateDto {
 
     @NotNull(message = "The doctor's ID is mandatory.")
     private Long doctorId;

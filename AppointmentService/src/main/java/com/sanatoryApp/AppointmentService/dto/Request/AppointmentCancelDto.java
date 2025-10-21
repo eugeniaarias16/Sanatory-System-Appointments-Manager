@@ -1,11 +1,10 @@
 package com.sanatoryApp.AppointmentService.dto.Request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
-public record AppointmentCancelRequestDto(
+public record AppointmentCancelDto(
         @NotNull
         Long patientId,
         @NotNull
