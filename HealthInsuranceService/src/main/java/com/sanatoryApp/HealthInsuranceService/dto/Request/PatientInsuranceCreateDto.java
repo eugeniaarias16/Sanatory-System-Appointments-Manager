@@ -16,8 +16,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Schema(description = "Dto to represent requests to create Patient Insurance Entity.")
 public class PatientInsuranceCreateDto {
-    @NotNull(message = "Patient's id is mandatory.")
-    private Long patientId;
+
+    @NotNull(message = "Patient's dni is mandatory.")
+    private Long patientDni;
     @NotBlank(message = "Credential Number is mandatory.")
     private String credentialNumber;
     @NotNull(message = "Patient's health insurance id is mandatory.")
@@ -28,7 +29,7 @@ public class PatientInsuranceCreateDto {
 
     public PatientInsurance toEntity(){
         PatientInsurance patientInsurance=new PatientInsurance();
-        patientInsurance.setPatientId(patientId);
+        patientInsurance.setPatientDni(patientDni);
         patientInsurance.setCredentialNumber(credentialNumber);
         patientInsurance.setHealthInsuranceId(healthInsuranceId);
         patientInsurance.setCoveragePlanId(coveragePlanId);

@@ -2,12 +2,14 @@ package com.sanatoryApp.HealthInsuranceService.dto.Response;
 
 import com.sanatoryApp.HealthInsuranceService.entity.CoveragePlan;
 
+import java.math.BigDecimal;
+
 public record CoveragePlanResponseDto(
         Long id,
         Long healthInsuranceId,
         String name,
         String description,
-        Double coverageValue,
+        BigDecimal coverageValuePercentage,
         boolean isActive
 ) {
     public static CoveragePlanResponseDto fromEntity(CoveragePlan  coveragePlan){

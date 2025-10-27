@@ -20,12 +20,16 @@ public class HealthInsuranceCreateDto {
     @NotBlank(message = "Company's name is mandatory")
     @Size(min = 5,max = 50, message = "The name must be between 5 and 50 characters long.")
     private String companyName;
+
     @Positive(message = "Company's Code must be positive.")
+    @NotNull
     private Long companyCode;
+
     @NotBlank
     @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid international phone format")
     @Schema(description = "Phone Number in international format ",example = "+5491112345678")
     private String phoneNumber;
+
     @NotBlank(message = "Company's email is mandatory.")
     @Email(message = "Invalid format.")
     @Schema(description = "Contact email", example = "contact@insurance.com")

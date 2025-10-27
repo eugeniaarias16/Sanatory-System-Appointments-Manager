@@ -22,7 +22,7 @@ public class PatientInsurance {
     private Long id;
 
     @Column(nullable = false)
-    private Long patientId;
+    private Long patientDni;
 
     @Column(unique = true, nullable = false)
     private String credentialNumber;

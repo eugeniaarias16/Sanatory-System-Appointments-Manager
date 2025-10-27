@@ -142,13 +142,22 @@ public class AvailabilityPatternService implements IAvailabilityPatternService {
         log.debug("Attempting to delete Availability Pattern with id {}",id);
         AvailabilityPattern availabilityPattern=availabilityPatternRepository.findById(id)
                 .orElseThrow(()->new ResourceNotFound("Availability Pattern not found with id: "+id));
+       availabilityPatternRepository.delete(availabilityPattern);
+
+        log.info("Availability Pattern with id {} successfully deleted", id);
+
+    }
+
+    @Override
+    public void sofDeleteAvailabilityPatternById(Long id) {
+        log.debug("Attempting to deactivate Availability Pattern with id {}",id);
+        AvailabilityPattern availabilityPattern=availabilityPatternRepository.findById(id)
+                .orElseThrow(()->new ResourceNotFound("Availability Pattern not found with id: "+id));
         availabilityPattern.setIsActive(false);
         availabilityPatternRepository.save(availabilityPattern);
         log.info("Availability Pattern with id {} successfully deactivated (soft delete)", id);
 
     }
-
-
 
 
 }

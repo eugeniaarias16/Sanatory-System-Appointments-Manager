@@ -12,7 +12,7 @@ public record PatientInsuranceResponseDto(
         Long id,
 
         @Schema(description = "Patient unique identifier")
-        Long patientId,
+        Long patientDni,
 
         @Schema(description = "Insurance credential number")
         String credentialNumber,
@@ -32,7 +32,7 @@ public record PatientInsuranceResponseDto(
     public static PatientInsuranceResponseDto fromEntity(PatientInsurance patientInsurance){
         return new PatientInsuranceResponseDto(
                 patientInsurance.getId(),
-                patientInsurance.getPatientId(),
+                patientInsurance.getPatientDni(),
                 patientInsurance.getCredentialNumber(),
                 patientInsurance.getHealthInsuranceId(),
                 patientInsurance.getCoveragePlanId(),

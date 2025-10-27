@@ -4,14 +4,13 @@ package com.sanatoryApp.HealthInsuranceService.dto.Request;
 import com.sanatoryApp.HealthInsuranceService.entity.CoveragePlan;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -23,13 +22,19 @@ public class CoveragePlanCreateDto {
 
     @NotBlank(message = "Coverages Plan's name is mandatory.")
     private String name;
+
+    @NotBlank(message = "Coverages Plan's health insurance id is mandatory.")
+    private Long healthInsuranceId;
+
     @NotBlank(message = "Coverages Plan's description is mandatory.")
     private String description;
-    @NotEmpty(message = "Coverages Plan's coverage is mandatory.")
-    @DecimalMin(value = "0.0")
-    @DecimalMax(value = "1.0")
-    @Schema(description = "Value between 0.0 and 1.0", example = "0.75")
-    private double coverageValue;
+
+    @NotNull(message = "Coverages Plan's coverage is mandatory.")
+    @DecimalMin(value = "00.00")
+    @DecimalMax(value = "100.00")
+    @Schema(description = "Value between 00.0 and 100.0", example = "75.00")
+    private BigDecimal coverageValue;
+
     private  boolean isActive;
 
     public CoveragePlan toEntity(){

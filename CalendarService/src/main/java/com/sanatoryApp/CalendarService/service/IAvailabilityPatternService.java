@@ -20,4 +20,5 @@ public interface IAvailabilityPatternService{
     AvailabilityPatternResponseDto createAvailabilityPattern(AvailabilityPatternCreateDto dto);
     AvailabilityPatternResponseDto updateAvailabilityPatternById(Long id, AvailabilityPatternUpdateDto dto);
     void deleteAvailabilityPatternById(Long id);
+    void sofDeleteAvailabilityPatternById(Long id);
 }
