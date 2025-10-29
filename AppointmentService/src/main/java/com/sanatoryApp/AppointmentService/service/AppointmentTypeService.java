@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -18,46 +19,51 @@ import java.util.List;
 @Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class AppointmentTypeService implements IAppointmentTypeService{
+public class AppointmentTypeService implements IAppointmentTypeService {
 
     private final IAppointmentTypeRepository appointmentTypeRepository;
 
     @Override
     public AppointmentTypeResponseDto findAppointmentTypeById(Long id) {
-        AppointmentType appointmentType= appointmentTypeRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFound("Appointment Type not found with id "+id));
+
+        AppointmentType appointmentType = appointmentTypeRepository.findByIdAndActive(id)
+                .orElseThrow(() -> new ResourceNotFound("Appointment Type not found with id " + id));
         return AppointmentTypeResponseDto.fromEntity(appointmentType);
     }
 
     @Override
+    @Transactional
     public AppointmentTypeResponseDto createAppointmentType(AppointmentTypeCreateDto dto) {
-        log.debug("Attempting to create new Appointment Type with name {}",dto.getName());
+        log.debug("Attempting to create new Appointment Type with name {}", dto.getName());
 
-        //verify if already exist Appointment Type with that name
-        if(existsAppointmentTypeByName(dto.getName())){
-            throw new IllegalArgumentException("Appointment Type already exist with name "+dto.getName());
+        // Verify if already exist Appointment Type with that name
+        if (existsAppointmentTypeByName(dto.getName())) {
+            throw new IllegalArgumentException("Appointment Type already exist with name " + dto.getName());
         }
-        //verify duration time
+
+        // Verify duration time
         validateDurationTime(dto.getDurationMin());
 
-        //validate buffer time
+        // Validate buffer time
         validateBufferTime(dto.getBufferTimeMin());
 
-        //validate base price
+        // Validate base price
         validateBasePrice(dto.getBasePrice());
 
-
-        AppointmentType appointmentType=dto.toEntity();
-        AppointmentType saved=appointmentTypeRepository.save(appointmentType);
-        log.info("Appointment Type with successfully created with id {}",saved.getId());
+        AppointmentType appointmentType = dto.toEntity();
+        AppointmentType saved = appointmentTypeRepository.save(appointmentType);
+        log.info("Appointment Type successfully created with id {}", saved.getId());
         return AppointmentTypeResponseDto.fromEntity(saved);
     }
 
     @Override
+    @Transactional
     public AppointmentTypeResponseDto updateAppointmentType(Long id, AppointmentTypeUpdateDto dto) {
-        log.debug("Attempting to update Appointment Type with id {}",id);
-        AppointmentType existingAppointmentType= appointmentTypeRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFound("Appointment Type not found with id "+id));
+        log.debug("Attempting to update Appointment Type with id {}", id);
+
+
+        AppointmentType existingAppointmentType = appointmentTypeRepository.findByIdAndActive(id)
+                .orElseThrow(() -> new ResourceNotFound("Appointment Type not found with id " + id));
 
         if (dto.getName() != null) {
             if (!existingAppointmentType.getName().equals(dto.getName())) {
@@ -89,38 +95,44 @@ public class AppointmentTypeService implements IAppointmentTypeService{
             existingAppointmentType.setBasePrice(dto.getBasePrice());
         }
 
-        AppointmentType saved=appointmentTypeRepository.save(existingAppointmentType);
-        log.info("Appointment Type with id {} successfully updated",id);
+        AppointmentType saved = appointmentTypeRepository.save(existingAppointmentType);
+        log.info("Appointment Type with id {} successfully updated", id);
         return AppointmentTypeResponseDto.fromEntity(saved);
     }
 
     @Override
+    @Transactional
     public void deleteAppointmentType(Long id) {
-        log.debug("Attempting to delete Appointment Type with id {}",id);
-        AppointmentType existingAppointmentType= appointmentTypeRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFound("Appointment Type not found with id "+id));
+        log.debug("Attempting to delete Appointment Type with id {}", id);
+
+
+        AppointmentType existingAppointmentType = appointmentTypeRepository.findByIdAndActive(id)
+                .orElseThrow(() -> new ResourceNotFound("Appointment Type not found with id " + id));
+
         existingAppointmentType.setActive(false);
-        log.info("Appointment Type with id {} successfully deactivated (soft deleted)",id);
         appointmentTypeRepository.save(existingAppointmentType);
+        log.info("Appointment Type with id {} successfully deactivated (soft deleted)", id);
     }
 
     @Override
     public AppointmentTypeResponseDto findAppointmentTypeByName(String name) {
-        log.debug("Attempting to find Appointment Type by Name: {}",name);
-        AppointmentType appointmentType=appointmentTypeRepository.findByName(name)
-                .orElseThrow(()-> new ResourceNotFound("Appointment Type not found with name "+name));
-        log.info("Appointment Type successfully found with name {} ",name);
+        log.debug("Attempting to find Appointment Type by Name: {}", name);
+        AppointmentType appointmentType = appointmentTypeRepository.findByName(name)
+                .orElseThrow(() -> new ResourceNotFound("Appointment Type not found with name " + name));
+        log.info("Appointment Type successfully found with name {}", name);
         return AppointmentTypeResponseDto.fromEntity(appointmentType);
     }
 
     @Override
     public List<AppointmentTypeResponseDto> findAppointmentTypeByLikeName(String name) {
-        log.debug("Attempting to find Appointment Type by Name containing the word : {}",name);
-        if(name==null || name.isEmpty()){
+        log.debug("Attempting to find Appointment Type by Name containing the word: {}", name);
+
+        if (name == null || name.trim().isEmpty()) {
             log.warn("Empty search term provided");
             return Collections.emptyList();
         }
-        List<AppointmentType>appointmentTypeList=appointmentTypeRepository.findByLikeName(name);
+
+        List<AppointmentType> appointmentTypeList = appointmentTypeRepository.findByLikeName(name);
         return appointmentTypeList.stream()
                 .map(AppointmentTypeResponseDto::fromEntity)
                 .toList();
@@ -128,22 +140,22 @@ public class AppointmentTypeService implements IAppointmentTypeService{
 
     @Override
     public List<AppointmentTypeResponseDto> findAppointmentTypeByRangeBasePrice(BigDecimal minPrice, BigDecimal maxPrice) {
-        log.debug("Attempting to find Appointment Type By Range Base Price between values min:{} - max:{}",minPrice,maxPrice);
+        log.debug("Attempting to find Appointment Type By Range Base Price between values min:{} - max:{}", minPrice, maxPrice);
 
-        if(minPrice==null || maxPrice==null){
+        if (minPrice == null || maxPrice == null) {
             throw new IllegalArgumentException("Price range cannot contain null values");
         }
-        if(minPrice.compareTo(new BigDecimal("1"))<0){
+        if (minPrice.compareTo(new BigDecimal("1")) < 0) {
             throw new IllegalArgumentException("Min Price must be at least 1");
         }
-        if(minPrice.compareTo(maxPrice)>0){
+        if (minPrice.compareTo(maxPrice) > 0) {
             throw new IllegalArgumentException(
                     "Minimum price cannot be greater than maximum price. " +
                             "Min: " + minPrice + ", Max: " + maxPrice
             );
         }
 
-        List<AppointmentType>appointmentTypeList=appointmentTypeRepository.findByRangeBasePrice(minPrice,maxPrice);
+        List<AppointmentType> appointmentTypeList = appointmentTypeRepository.findByRangeBasePrice(minPrice, maxPrice);
         return appointmentTypeList.stream()
                 .map(AppointmentTypeResponseDto::fromEntity)
                 .toList();
@@ -154,26 +166,24 @@ public class AppointmentTypeService implements IAppointmentTypeService{
         return appointmentTypeRepository.existsByNameIgnoreCase(name);
     }
 
-    private void validateDurationTime(int durationMin){
-        //verify that appointment's duration is at least 15 minutes
-        if(durationMin<15){
+    private void validateDurationTime(int durationMin) {
+        // Verify that appointment's duration is at least 15 minutes
+        if (durationMin < 15) {
             throw new IllegalArgumentException("Appointments cannot last less than 15 minutes.");
         }
-
     }
-    private void validateBufferTime(int durationMin){
-        //verify that buffer time is positive
-        if(durationMin<0){
+
+    private void validateBufferTime(int bufferTimeMin) {
+        // Verify that buffer time is positive
+        if (bufferTimeMin < 0) {
             throw new IllegalArgumentException("Buffer Time must be positive.");
         }
-
     }
-    private void validateBasePrice(BigDecimal price){
-        //verify that price is positive
+
+    private void validateBasePrice(BigDecimal price) {
+        // Verify that price is positive
         if (price.compareTo(new BigDecimal("1")) < 0) {
             throw new IllegalArgumentException("Price must be at least 1");
         }
-
     }
-
 }

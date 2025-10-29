@@ -67,7 +67,7 @@ public class DoctorService implements IDoctorService{
 
             // Only validate if the email is different from the current one
             if (!existingDoctor.getEmail().equalsIgnoreCase(newEmail)) {
-                if (existByEmail(newEmail)) {
+                if (existsByEmail(newEmail)) {
                     log.error("Duplicate email attempt: {}", newEmail);
                     throw new DuplicateResourceException(
                             "Doctor already exists with email: " + newEmail
@@ -83,7 +83,7 @@ public class DoctorService implements IDoctorService{
 
             // Only validate if the phone number is different from the current one.
             if (!existingDoctor.getPhoneNumber().equals(newPhone)) {
-                if (existByPhoneNumber(newPhone)) {
+                if (existsByPhoneNumber(newPhone)) {
                     log.error("Duplicate phone number attempt: {}", newPhone);
                     throw new DuplicateResourceException(
                             "Doctor already exists with phone number: " + newPhone
@@ -106,17 +106,17 @@ public class DoctorService implements IDoctorService{
     @Override
     public DoctorResponseDto createDoctor(DoctorCreateDto dto) {
         log.debug("Attempting to create new Doctor with values: {}",dto);
-        if(existByEmail(dto.getEmail())){
+        if(existsByEmail(dto.getEmail())){
             throw new DuplicateResourceException("Doctor already exists with email: "+dto.getEmail());
         }
-        if(existByPhoneNumber(dto.getPhoneNumber())){
+        if(existsByPhoneNumber(dto.getPhoneNumber())){
             throw new DuplicateResourceException("Doctor already exists with phone number: "+dto.getPhoneNumber());
         }
 
         Doctor doctor=dto.toEntity();
         Doctor saved=doctorRepository.save(doctor);
         log.info("Doctor with id {} successfully created.",saved.getId());
-        return DoctorResponseDto.fromEntity(doctor);
+        return DoctorResponseDto.fromEntity(saved);
     }
     @Transactional
     @Override
@@ -153,14 +153,14 @@ public class DoctorService implements IDoctorService{
     }
 
     @Override
-    public boolean existByEmail(String email) {
+    public boolean existsByEmail(String email) {
         log.debug("Verifying if Doctor with email {} exists.",email);
-        return doctorRepository.existByEmail(email);
+        return doctorRepository.existsByEmail(email);
     }
 
     @Override
-    public boolean existByPhoneNumber(String phoneNumber) {
+    public boolean existsByPhoneNumber(String phoneNumber) {
         log.debug("Verifying id Doctor with phoneNumber {} exists.",phoneNumber);
-        return doctorRepository.existByPhoneNumber(phoneNumber);
+        return doctorRepository.existsByPhoneNumber(phoneNumber);
     }
 }

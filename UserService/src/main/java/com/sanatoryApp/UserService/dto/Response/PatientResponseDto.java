@@ -6,6 +6,7 @@ public record PatientResponseDto(
         Long id,
         String firstName,
         String lastName,
+        String dni,
         String email,
         String phoneNumber
 ) {
@@ -14,6 +15,7 @@ public record PatientResponseDto(
                 patient.getId(),
                 patient.getFirstName(),
                 patient.getLastName(),
+                patient.getDni(),
                 patient.getEmail(),
                 patient.getPhoneNumber()
         );

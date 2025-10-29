@@ -1,9 +1,7 @@
 package com.sanatoryApp.HealthInsuranceService.dto.Request;
 
-
 import com.sanatoryApp.HealthInsuranceService.entity.CoveragePlan;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,29 +17,27 @@ import java.math.BigDecimal;
 @Schema(description = "Dto to represent requests to create Coverage Plan Entity.")
 public class CoveragePlanCreateDto {
 
-
-    @NotBlank(message = "Coverages Plan's name is mandatory.")
-    private String name;
-
-    @NotBlank(message = "Coverages Plan's health insurance id is mandatory.")
+    @NotNull(message = "Coverage Plan's health insurance id is mandatory.")
     private Long healthInsuranceId;
 
-    @NotBlank(message = "Coverages Plan's description is mandatory.")
+    @NotBlank(message = "Coverage Plan's name is mandatory.")
+    private String name;
+
+    @NotBlank(message = "Coverage Plan's description is mandatory.")
     private String description;
 
-    @NotNull(message = "Coverages Plan's coverage is mandatory.")
-    @DecimalMin(value = "00.00")
-    @DecimalMax(value = "100.00")
-    @Schema(description = "Value between 00.0 and 100.0", example = "75.00")
+    @NotNull(message = "Coverage Plan's coverage value is mandatory.")
+    @DecimalMin(value = "0.00", message = "Coverage value must be at least 0.00")
+    @DecimalMax(value = "100.00", message = "Coverage value must not exceed 100.00")
+    @Schema(description = "Value between 0.00 and 100.00", example = "75.00")
     private BigDecimal coverageValue;
 
-    private  boolean isActive;
-
-    public CoveragePlan toEntity(){
-        CoveragePlan coveragePlan=new CoveragePlan();
-        coveragePlan.setName(name);
-        coveragePlan.setDescription(description);
-        coveragePlan.setCoverageValuePercentage(coverageValue);
+    public CoveragePlan toEntity() {
+        CoveragePlan coveragePlan = new CoveragePlan();
+        coveragePlan.setHealthInsuranceId(this.healthInsuranceId);
+        coveragePlan.setName(this.name);
+        coveragePlan.setDescription(this.description);
+        coveragePlan.setCoverageValuePercentage(this.coverageValue);
         coveragePlan.setActive(true);
         return coveragePlan;
     }

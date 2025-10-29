@@ -4,7 +4,9 @@ import com.sanatoryApp.UserService.dto.Request.PatientCreateDto;
 import com.sanatoryApp.UserService.dto.Request.PatientUpdateDto;
 import com.sanatoryApp.UserService.dto.Response.PatientResponseDto;
 import com.sanatoryApp.UserService.service.IPatientService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,36 +46,36 @@ public class PatientController {
 
     /* =================== POST ENDPOINTS =================== */
     @PostMapping("/create")
-    public ResponseEntity<PatientResponseDto>createPatient(@RequestBody PatientCreateDto dto){
+    public ResponseEntity<PatientResponseDto>createPatient(@Valid @RequestBody PatientCreateDto dto){
         PatientResponseDto responseDto=patientService.createPatient(dto);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     /* =================== PUT ENDPOINTS =================== */
-    @PostMapping("/update/id/{id}")
-    public ResponseEntity<PatientResponseDto>createPatient(@PathVariable Long id,
-                                                           @RequestBody PatientUpdateDto dto){
+    @PutMapping("/update/id/{id}")
+    public ResponseEntity<PatientResponseDto>updatePatientById(@PathVariable Long id,
+                                                               @Valid @RequestBody PatientUpdateDto dto){
         PatientResponseDto responseDto=patientService.updatePatientById(id,dto);
         return ResponseEntity.ok(responseDto);
     }
 
-    @PostMapping("/update/dni/{dni}")
-    public ResponseEntity<PatientResponseDto>createPatient(@PathVariable String dni,
-                                                           @RequestBody PatientUpdateDto dto){
+    @PutMapping("/update/dni/{dni}")
+    public ResponseEntity<PatientResponseDto>updatePatientByDni(@PathVariable String dni,
+                                                                @Valid @RequestBody PatientUpdateDto dto){
         PatientResponseDto responseDto=patientService.updatePatientByDni(dni,dto);
         return ResponseEntity.ok(responseDto);
     }
 
     /* =================== DELETE ENDPOINTS =================== */
     @DeleteMapping("/delete/id/{id}")
-    public ResponseEntity<String>deletePatientById(@PathVariable Long id){
+    public ResponseEntity<Void>deletePatientById(@PathVariable Long id){
         patientService.deletePatientById(id);
-        return ResponseEntity.ok("Patient successfully deleted.");
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/delete/dni/{dni}")
-    public ResponseEntity<String>deletePatientByDni(@PathVariable String dni){
+    public ResponseEntity<Void>deletePatientByDni(@PathVariable String dni){
         patientService.deletePatientByDni(dni);
-        return ResponseEntity.ok("Patient successfully deleted.");
+        return ResponseEntity.noContent().build();
     }
 }

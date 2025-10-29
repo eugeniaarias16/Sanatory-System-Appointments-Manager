@@ -7,6 +7,7 @@ import com.sanatoryApp.UserService.service.IDoctorService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ public class DoctorController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("/id/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<DoctorResponseDto> findDoctorById(@PathVariable Long id){
         DoctorResponseDto doctor= doctorService.findDoctorById(id);
         return ResponseEntity.ok(doctor);
@@ -48,9 +49,9 @@ public class DoctorController {
 
     /* =================== POST ENDPOINTS =================== */
     @PostMapping("/create")
-    public ResponseEntity<DoctorResponseDto>createDoctor(@RequestBody DoctorCreateDto dto){
+    public ResponseEntity<DoctorResponseDto>createDoctor(@Valid @RequestBody DoctorCreateDto dto){
         DoctorResponseDto doctor=doctorService.createDoctor(dto);
-        return ResponseEntity.ok(doctor);
+        return ResponseEntity.status(HttpStatus.CREATED).body(doctor);
     }
 
     /* =================== PUT ENDPOINTS =================== */
@@ -63,8 +64,8 @@ public class DoctorController {
 
     /* =================== DELETE ENDPOINTS =================== */
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteDoctorById(@PathVariable Long id){
+    public ResponseEntity<Void> deleteDoctorById(@PathVariable Long id){
         doctorService.deleteDoctorById(id);
-        return ResponseEntity.ok("Doctor successfully deleted.");
+        return ResponseEntity.noContent().build();
     }
 }

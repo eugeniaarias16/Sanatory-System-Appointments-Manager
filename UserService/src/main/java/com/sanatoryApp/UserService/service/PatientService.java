@@ -13,13 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
+
 @Service
 @Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PatientService implements IPatientService{
-   private final IPatientRepository patientRepository;
+    private final IPatientRepository patientRepository;
 
     @Override
     public List<PatientResponseDto> findAll() {
@@ -52,7 +52,7 @@ public class PatientService implements IPatientService{
             if(!existingPatient.getDni().equalsIgnoreCase(newDni)){
 
                 //verifying if dni already exists
-                if(existByDni(newDni)){
+                if(existsByDni(newDni)){
                     throw new DuplicateResourceException("Already exists Patient with dni: "+newDni);
                 }
                 existingPatient.setDni(newDni);
@@ -92,7 +92,7 @@ public class PatientService implements IPatientService{
 
             //verifying if old phone number and new phone number are equals
             if(!existingPatient.getPhoneNumber().equals(newPhoneNumber)){
-               //verifying if new phone number already exists
+                //verifying if new phone number already exists
                 if(existsByPhoneNumber(newPhoneNumber)){
                     throw new DuplicateResourceException("Already exists Patient with phone number: "+newPhoneNumber);
                 }
@@ -106,6 +106,7 @@ public class PatientService implements IPatientService{
         return PatientResponseDto.fromEntity(saved);
     }
 
+    @Transactional
     @Override
     public PatientResponseDto updatePatientByDni(String dni, PatientUpdateDto dto) {
         log.debug("Verifying if patient with dni {} exists...",dni);
@@ -121,7 +122,7 @@ public class PatientService implements IPatientService{
             if(!existingPatient.getDni().equalsIgnoreCase(newDni)){
 
                 //verifying if dni already exists
-                if(existByDni(newDni)){
+                if(existsByDni(newDni)){
                     throw new DuplicateResourceException("Already exists Patient with dni: "+newDni);
                 }
                 existingPatient.setDni(newDni);
@@ -187,7 +188,7 @@ public class PatientService implements IPatientService{
             throw new DuplicateResourceException("Patient already exists with phone  number: "+phoneNumber);
         }
         String dni=dto.getDni();
-        if(existByDni(dni)){
+        if(existsByDni(dni)){
             throw new DuplicateResourceException("Patient already exit with dni: "+dni);
         }
         log.debug("Creating new patient...");
@@ -206,6 +207,7 @@ public class PatientService implements IPatientService{
         patientRepository.delete(existingPatient);
     }
 
+    @Transactional
     @Override
     public void deletePatientByDni(String dni) {
         Patient existingPatient=patientRepository.findPatientByDni(dni)
@@ -232,9 +234,9 @@ public class PatientService implements IPatientService{
     }
 
     @Override
-    public boolean existByDni(String dni) {
+    public boolean existsByDni(String dni) {
         log.debug("Verifying if Patient with dni {} exists...",dni);
-        return patientRepository.existByDni(dni);
+        return patientRepository.existsByDni(dni);
     }
 
     @Override

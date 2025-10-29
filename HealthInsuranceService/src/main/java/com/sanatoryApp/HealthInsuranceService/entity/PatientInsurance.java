@@ -1,6 +1,5 @@
 package com.sanatoryApp.HealthInsuranceService.entity;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,7 +21,7 @@ public class PatientInsurance {
     private Long id;
 
     @Column(nullable = false)
-    private Long patientDni;
+    private String patientDni;
 
     @Column(unique = true, nullable = false)
     private String credentialNumber;
@@ -32,18 +31,19 @@ public class PatientInsurance {
 
     private Long coveragePlanId;
 
-    @Column(nullable = false,updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDate createdAt;
 
-
-    @Column(nullable = false,columnDefinition = "boolean default true")
+    @Column(nullable = false, columnDefinition = "boolean default true")
     private Boolean isActive;
 
     @PrePersist
-    protected void onCreate(){
-        if(createdAt==null){
-            createdAt=LocalDate.now();
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDate.now();
+        }
+        if (isActive == null) {
+            isActive = true;
         }
     }
-
 }

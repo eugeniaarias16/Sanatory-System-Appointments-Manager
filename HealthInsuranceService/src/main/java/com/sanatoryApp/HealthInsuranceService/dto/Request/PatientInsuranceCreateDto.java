@@ -9,31 +9,36 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Dto to represent requests to create Patient Insurance Entity.")
+@Schema(description = "DTO to represent requests to create Patient Insurance Entity")
 public class PatientInsuranceCreateDto {
 
-    @NotNull(message = "Patient's dni is mandatory.")
-    private Long patientDni;
-    @NotBlank(message = "Credential Number is mandatory.")
+    @NotBlank(message = "Patient's DNI is mandatory.")
+    @Schema(description = "Patient's national identification number", example = "12345678")
+    private String patientDni;
+
+    @NotBlank(message = "Credential number is mandatory.")
+    @Schema(description = "Insurance credential number", example = "CRED-2024-001")
     private String credentialNumber;
-    @NotNull(message = "Patient's health insurance id is mandatory.")
+
+    @NotNull(message = "Patient's health insurance ID is mandatory.")
+    @Schema(description = "Health insurance company identifier")
     private Long healthInsuranceId;
-    @NotNull(message = "Patient's coverage plan id is mandatory.")
+
+    @NotNull(message = "Patient's coverage plan ID is mandatory.")
+    @Schema(description = "Coverage plan identifier")
     private Long coveragePlanId;
 
-
-    public PatientInsurance toEntity(){
-        PatientInsurance patientInsurance=new PatientInsurance();
+    public PatientInsurance toEntity() {
+        PatientInsurance patientInsurance = new PatientInsurance();
         patientInsurance.setPatientDni(patientDni);
         patientInsurance.setCredentialNumber(credentialNumber);
         patientInsurance.setHealthInsuranceId(healthInsuranceId);
         patientInsurance.setCoveragePlanId(coveragePlanId);
+        patientInsurance.setIsActive(true);
         return patientInsurance;
     }
-
 }

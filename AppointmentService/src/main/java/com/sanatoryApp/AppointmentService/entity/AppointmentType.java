@@ -31,4 +31,11 @@ public class AppointmentType {
     private BigDecimal basePrice;
     @Column(nullable = false)
     private boolean isActive;
+
+    @PrePersist
+    public void prePersist() {
+        if (!this.isActive) {
+            this.isActive = true;
+        }
+    }
 }

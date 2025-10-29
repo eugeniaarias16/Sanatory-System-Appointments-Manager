@@ -18,12 +18,10 @@ import java.util.List;
 
 import static com.sanatoryApp.CalendarService.utils.TimeValidationUtils.validateTimeRange;
 
-
 @Service
 @Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-
 public class AvailabilityPatternService implements IAvailabilityPatternService {
 
     private final IAvailabilityPatternRepository availabilityPatternRepository;
@@ -31,18 +29,18 @@ public class AvailabilityPatternService implements IAvailabilityPatternService {
 
     @Override
     public AvailabilityPatternResponseDto findAvailabilityPatternById(Long id) {
-        log.debug("Attempting to find Availability Pattern by id: {}",id);
-        AvailabilityPattern availabilityPattern=availabilityPatternRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFound("Availability Pattern not found with id: "+id));
+        log.debug("Attempting to find Availability Pattern by id: {}", id);
+        AvailabilityPattern availabilityPattern = availabilityPatternRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Availability Pattern not found with id: " + id));
         return AvailabilityPatternResponseDto.fromEntity(availabilityPattern);
     }
 
     @Override
     public List<AvailabilityPatternResponseDto> findAvailabilityPatternByDoctorCalendarId(Long id) {
-        log.debug("Attempting to find Availability Patterns by doctor calendar id: {}",id);
-        List<AvailabilityPattern> availabilityPatternList=availabilityPatternRepository.findByDoctorCalendarId(id) ;
-        if(availabilityPatternList.isEmpty()) {
-           throw  new ResourceNotFound("Availability Pattern not found with doctor calendar id: " + id);
+        log.debug("Attempting to find Availability Patterns by doctor calendar id: {}", id);
+        List<AvailabilityPattern> availabilityPatternList = availabilityPatternRepository.findByDoctorCalendarId(id);
+        if (availabilityPatternList.isEmpty()) {
+            throw new ResourceNotFound("Availability Pattern not found with doctor calendar id: " + id);
         }
         return availabilityPatternList.stream()
                 .map(AvailabilityPatternResponseDto::fromEntity)
@@ -50,34 +48,39 @@ public class AvailabilityPatternService implements IAvailabilityPatternService {
     }
 
     @Override
-    public List<AvailabilityPatternResponseDto> findByDoctorCalendarIdAndDayOfWeekAndIsActiveTrue(Long calendarId, DayOfWeek dayOfWeek) {
-        List<AvailabilityPattern> availabilityPatternList=availabilityPatternRepository.findByDoctorCalendarIdAndDayOfWeekAndIsActiveTrue(calendarId,dayOfWeek);
-        if(availabilityPatternList.isEmpty()){
-            log.info("No Availability Pattern found with calendar id: {} on Day: {}",calendarId,dayOfWeek);
+    public List<AvailabilityPatternResponseDto> findByDoctorCalendarIdAndDayOfWeekAndIsActiveTrue(
+            Long calendarId,
+            DayOfWeek dayOfWeek
+    ) {
+        List<AvailabilityPattern> availabilityPatternList =
+                availabilityPatternRepository.findByDoctorCalendarIdAndDayOfWeekAndIsActiveTrue(calendarId, dayOfWeek);
+        if (availabilityPatternList.isEmpty()) {
+            log.info("No Availability Pattern found with calendar id: {} on Day: {}", calendarId, dayOfWeek);
         }
-        return  availabilityPatternList.stream()
+        return availabilityPatternList.stream()
                 .map(AvailabilityPatternResponseDto::fromEntity)
                 .toList();
     }
 
     @Override
     public List<AvailabilityPatternResponseDto> findByDoctorId(Long doctorId) {
-        List<AvailabilityPattern> availabilityPatternList=availabilityPatternRepository.findByDoctorId(doctorId);
-        if(availabilityPatternList.isEmpty()){
-            log.info("No Availability Pattern found with doctor id {}",doctorId);
+        List<AvailabilityPattern> availabilityPatternList = availabilityPatternRepository.findByDoctorId(doctorId);
+        if (availabilityPatternList.isEmpty()) {
+            log.info("No Availability Pattern found with doctor id {}", doctorId);
         }
-        return  availabilityPatternList.stream()
+        return availabilityPatternList.stream()
                 .map(AvailabilityPatternResponseDto::fromEntity)
                 .toList();
     }
 
     @Override
     public List<AvailabilityPatternResponseDto> findByDoctorIdAndDay(Long doctorId, DayOfWeek dayOfWeek) {
-        List<AvailabilityPattern> availabilityPatternList=availabilityPatternRepository.findByDoctorIdAndDay(doctorId,dayOfWeek);
-        if(availabilityPatternList.isEmpty()){
-            log.info("No Availability Pattern found with doctor id:{} on Day: {}",doctorId,dayOfWeek);
+        List<AvailabilityPattern> availabilityPatternList =
+                availabilityPatternRepository.findByDoctorIdAndDay(doctorId, dayOfWeek);
+        if (availabilityPatternList.isEmpty()) {
+            log.info("No Availability Pattern found with doctor id:{} on Day: {}", doctorId, dayOfWeek);
         }
-        return  availabilityPatternList.stream()
+        return availabilityPatternList.stream()
                 .map(AvailabilityPatternResponseDto::fromEntity)
                 .toList();
     }
@@ -85,79 +88,76 @@ public class AvailabilityPatternService implements IAvailabilityPatternService {
     @Transactional
     @Override
     public AvailabilityPatternResponseDto createAvailabilityPattern(AvailabilityPatternCreateDto dto) {
-       log.debug("Attempting to create Availability Pattern with values: {} ",dto);
+        log.debug("Attempting to create Availability Pattern with values: {} ", dto);
 
-       //validate range of time
-        validateTimeRange(dto.getStartTime(),dto.getEndTime());
+        validateTimeRange(dto.getStartTime(), dto.getEndTime());
 
-       //verify that the doctor calendar ID actually exists
-        if(!doctorCalendarRepository.existsById(dto.getDoctorCalendarId())){
+        if (!doctorCalendarRepository.existsById(dto.getDoctorCalendarId())) {
             throw new ResourceNotFound("The Doctor Calendar's id is wrong.");
         }
 
-        //verify if exists overlapping pattern
-        if (availabilityPatternRepository.hasOverlappingPattern(dto.getDoctorCalendarId(),dto.getDayOfWeek(),dto.getStartTime(),dto.getEndTime(),0L)){
-            throw new IllegalArgumentException("Schedule conflict: The new time slot overlaps with an existing schedule.\n The doctor cannot have overlapping schedules across any of their calendars. ");
+        if (availabilityPatternRepository.hasOverlappingPattern(
+                dto.getDoctorCalendarId(),
+                dto.getDayOfWeek(),
+                dto.getStartTime(),
+                dto.getEndTime(),
+                0L)) {
+            throw new IllegalArgumentException(
+                    "Schedule conflict: The new time slot overlaps with an existing schedule. " +
+                            "The doctor cannot have overlapping schedules across any of their calendars."
+            );
         }
 
-
-
-
-        AvailabilityPattern availabilityPattern=dto.toEntity();
-        AvailabilityPattern saved=availabilityPatternRepository.save(availabilityPattern);
-        log.info("Availability Pattern successfully created with id {}",saved.getId());
+        AvailabilityPattern availabilityPattern = dto.toEntity();
+        AvailabilityPattern saved = availabilityPatternRepository.save(availabilityPattern);
+        log.info("Availability Pattern successfully created with id {}", saved.getId());
         return AvailabilityPatternResponseDto.fromEntity(saved);
     }
 
     @Transactional
     @Override
     public AvailabilityPatternResponseDto updateAvailabilityPatternById(Long id, AvailabilityPatternUpdateDto dto) {
-        log.debug("Attempting to update Availability Pattern with id {}",id);
-        AvailabilityPattern existingAvailabilityPattern=availabilityPatternRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFound("Availability Pattern not found with id: "+id));
+        log.debug("Attempting to update Availability Pattern with id {}", id);
+        AvailabilityPattern existingAvailabilityPattern = availabilityPatternRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Availability Pattern not found with id: " + id));
 
-        validateTimeRange(dto.startTime(),dto.endTime());
-        if(availabilityPatternRepository.hasOverlappingPattern(
+        validateTimeRange(dto.startTime(), dto.endTime());
+
+        if (availabilityPatternRepository.hasOverlappingPattern(
                 existingAvailabilityPattern.getDoctorCalendarId(),
                 existingAvailabilityPattern.getDayOfWeek(),
                 dto.startTime(),
                 dto.endTime(),
-                id)){
-            throw new IllegalArgumentException("Schedule conflict: The updated time slot overlaps with an existing schedule."
-            );
+                id)) {
+            throw new IllegalArgumentException("Schedule conflict: The updated time slot overlaps with an existing schedule.");
         }
 
         existingAvailabilityPattern.setStartTime(dto.startTime());
         existingAvailabilityPattern.setEndTime(dto.endTime());
-        AvailabilityPattern saved=availabilityPatternRepository.save(existingAvailabilityPattern);
-        log.info("Availability Pattern successfully updated with start-time: {} and end-time: {}",saved.getStartTime(),saved.getEndTime());
+        AvailabilityPattern saved = availabilityPatternRepository.save(existingAvailabilityPattern);
+        log.info("Availability Pattern successfully updated with start-time: {} and end-time: {}",
+                saved.getStartTime(), saved.getEndTime());
         return AvailabilityPatternResponseDto.fromEntity(saved);
-
-
     }
 
     @Transactional
     @Override
     public void deleteAvailabilityPatternById(Long id) {
-        log.debug("Attempting to delete Availability Pattern with id {}",id);
-        AvailabilityPattern availabilityPattern=availabilityPatternRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFound("Availability Pattern not found with id: "+id));
-       availabilityPatternRepository.delete(availabilityPattern);
-
+        log.debug("Attempting to delete Availability Pattern with id {}", id);
+        AvailabilityPattern availabilityPattern = availabilityPatternRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Availability Pattern not found with id: " + id));
+        availabilityPatternRepository.delete(availabilityPattern);
         log.info("Availability Pattern with id {} successfully deleted", id);
-
     }
 
+    @Transactional
     @Override
-    public void sofDeleteAvailabilityPatternById(Long id) {
-        log.debug("Attempting to deactivate Availability Pattern with id {}",id);
-        AvailabilityPattern availabilityPattern=availabilityPatternRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFound("Availability Pattern not found with id: "+id));
-        availabilityPattern.setIsActive(false);
+    public void softDeleteAvailabilityPatternById(Long id) {
+        log.debug("Attempting to deactivate Availability Pattern with id {}", id);
+        AvailabilityPattern availabilityPattern = availabilityPatternRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Availability Pattern not found with id: " + id));
+        availabilityPattern.setActive(false);
         availabilityPatternRepository.save(availabilityPattern);
         log.info("Availability Pattern with id {} successfully deactivated (soft delete)", id);
-
     }
-
-
 }

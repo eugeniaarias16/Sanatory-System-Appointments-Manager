@@ -46,14 +46,14 @@ public class SecretaryService implements ISecretaryService{
 
     @Override
     public boolean existsByDni(String dni) {
-        return secretaryRepository.existByDni(dni);
+        return secretaryRepository.existsByDni(dni);
     }
 
     @Transactional
     @Override
     public SecretaryResponseDto createSecretary(SecretaryCreateDto dto) {
         if(existsByEmail(dto.getEmail())){
-        throw new DuplicateResourceException("Secretary already exists with email:"+dto.getEmail());
+            throw new DuplicateResourceException("Secretary already exists with email:"+dto.getEmail());
         }
         if (existsByDni(dto.getDni())){
             throw new DuplicateResourceException("Secretary already exists with dni:"+dto.getDni());
@@ -71,7 +71,7 @@ public class SecretaryService implements ISecretaryService{
         Secretary existingSecretary=secretaryRepository.findById(id)
                 .orElseThrow(()->new ResourceNotFound("Secretary not found with id:"+id));
 
-        if(dto.dni()!=null & !dto.dni().isEmpty()){
+        if(dto.dni()!=null && !dto.dni().isEmpty()){
             String newDni= dto.dni();
             if(!existingSecretary.getDni().equalsIgnoreCase(newDni)){
                 if(existsByDni(newDni)){
@@ -80,7 +80,7 @@ public class SecretaryService implements ISecretaryService{
                 existingSecretary.setDni(newDni);
             }
         }
-        if(dto.email()!=null & !dto.email().isEmpty()){
+        if(dto.email()!=null && !dto.email().isEmpty()){
             String newEmail= dto.email();
             if(!existingSecretary.getEmail().equalsIgnoreCase(newEmail)){
                 if(existsByEmail(newEmail)){
@@ -94,7 +94,7 @@ public class SecretaryService implements ISecretaryService{
             existingSecretary.setFirstName(dto.firstName().trim());
         }
         if(dto.lastName()!=null && !dto.lastName().isEmpty()){
-            existingSecretary.setFirstName(dto.lastName().trim());
+            existingSecretary.setLastName(dto.lastName().trim());
         }
 
         Secretary saved=secretaryRepository.save(existingSecretary);
@@ -107,7 +107,7 @@ public class SecretaryService implements ISecretaryService{
         Secretary existingSecretary=secretaryRepository.findSecretaryByDni(dni)
                 .orElseThrow(()->new ResourceNotFound("Secretary not found with dni:"+dni));
 
-        if(dto.dni()!=null & !dto.dni().isEmpty()){
+        if(dto.dni()!=null && !dto.dni().isEmpty()){
             String newDni= dto.dni();
             if(!existingSecretary.getDni().equalsIgnoreCase(newDni)){
                 if(existsByDni(newDni)){
@@ -116,7 +116,7 @@ public class SecretaryService implements ISecretaryService{
                 existingSecretary.setDni(newDni);
             }
         }
-        if(dto.email()!=null & !dto.email().isEmpty()){
+        if(dto.email()!=null && !dto.email().isEmpty()){
             String newEmail= dto.email();
             if(!existingSecretary.getEmail().equalsIgnoreCase(newEmail)){
                 if(existsByEmail(newEmail)){
@@ -130,7 +130,7 @@ public class SecretaryService implements ISecretaryService{
             existingSecretary.setFirstName(dto.firstName().trim());
         }
         if(dto.lastName()!=null && !dto.lastName().isEmpty()){
-            existingSecretary.setFirstName(dto.lastName().trim());
+            existingSecretary.setLastName(dto.lastName().trim());
         }
 
         Secretary saved=secretaryRepository.save(existingSecretary);
@@ -149,6 +149,7 @@ public class SecretaryService implements ISecretaryService{
         log.info("Secretary with id: {} successfully deleted.",id);
     }
 
+    @Transactional
     @Override
     public void deleteSecretaryByDni(String dni) {
         Secretary secretary= secretaryRepository.findSecretaryByDni(dni)

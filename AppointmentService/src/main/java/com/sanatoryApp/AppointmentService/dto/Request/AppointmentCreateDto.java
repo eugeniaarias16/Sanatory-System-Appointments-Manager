@@ -14,14 +14,19 @@ public class AppointmentCreateDto {
     @NotNull(message = "The doctor's ID is mandatory.")
     private Long doctorId;
 
-    @NotNull(message = "The patient ID is mandatory.")
-    private Long patientId;
+    @NotNull(message = "The patient dni is mandatory.")
+    private String patientDni;
 
     @NotNull(message = "The appointment type is mandatory.")
     private Long appointmentTypeId;
 
-    @Schema(description = "Patient insurance ID ")
-    private Long patientInsuranceId;
+    @NotNull
+    @Schema(description = "Patient insurance credential number is mandatory ")
+   private String credentialNumber;
+
+    @NotNull
+    @Schema(description = "Doctor Calendar Id is mandatory")
+    private Long doctorCalendarId;
 
     @NotNull(message = "The date is mandatory.")
     @FutureOrPresent(message = "The date must be present or future.")

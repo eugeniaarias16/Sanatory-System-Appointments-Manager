@@ -9,7 +9,7 @@ public interface IPatientRepository extends JpaRepository<Patient,Long> {
 
     Optional<Patient>findPatientByDni(String dni);
     Optional<Patient>findPatientByEmail(String email);
-    boolean existByDni(String dni);
+    boolean existsByDni(String dni);
     boolean existsByEmail(String email);
     boolean existsByPhoneNumber(String phoneNumber);
 }

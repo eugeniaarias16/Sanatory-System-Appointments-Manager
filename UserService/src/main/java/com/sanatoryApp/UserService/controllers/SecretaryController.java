@@ -4,7 +4,9 @@ import com.sanatoryApp.UserService.dto.Request.SecretaryCreateDto;
 import com.sanatoryApp.UserService.dto.Request.SecretaryUpdateDto;
 import com.sanatoryApp.UserService.dto.Response.SecretaryResponseDto;
 import com.sanatoryApp.UserService.service.ISecretaryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +20,7 @@ public class SecretaryController {
     private final ISecretaryService secretaryService;
 
     /* =================== GET ENDPOINTS =================== */
-   @GetMapping
+    @GetMapping
     public ResponseEntity<List<SecretaryResponseDto>>findAllSecretaries(){
         List<SecretaryResponseDto>list=secretaryService.findAll();
         return ResponseEntity.ok(list);
@@ -45,38 +47,38 @@ public class SecretaryController {
 
     /* =================== POST ENDPOINTS =================== */
     @PostMapping("/create")
-    public ResponseEntity<SecretaryResponseDto>createSecretary(@RequestBody SecretaryCreateDto dto){
+    public ResponseEntity<SecretaryResponseDto>createSecretary(@Valid @RequestBody SecretaryCreateDto dto){
         SecretaryResponseDto responseDto=secretaryService.createSecretary(dto);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     /* =================== PUT ENDPOINTS =================== */
 
     @PutMapping("/update/id/{id}")
     public ResponseEntity<SecretaryResponseDto>updateSecretaryById(@PathVariable Long id,
-                                                               @RequestBody SecretaryUpdateDto dto){
+                                                                   @Valid @RequestBody SecretaryUpdateDto dto){
         SecretaryResponseDto responseDto=secretaryService.updateSecretaryById(id,dto);
         return ResponseEntity.ok(responseDto);
     }
 
     @PutMapping("/update/dni/{dni}")
     public ResponseEntity<SecretaryResponseDto>updateSecretaryByDni(@PathVariable String dni,
-                                                               @RequestBody SecretaryUpdateDto dto){
+                                                                    @Valid @RequestBody SecretaryUpdateDto dto){
         SecretaryResponseDto responseDto=secretaryService.updateSecretaryByDni(dni,dto);
         return ResponseEntity.ok(responseDto);
     }
 
     /* =================== DELETE ENDPOINTS =================== */
     @DeleteMapping("/delete/id/{id}")
-    public ResponseEntity<String>deleteSecretaryById(@PathVariable Long id){
+    public ResponseEntity<Void>deleteSecretaryById(@PathVariable Long id){
         secretaryService.deleteSecretaryById(id);
-        return ResponseEntity.ok("Secretary with id "+id+" successfully deleted");
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/delete/dni/{dni}")
-    public ResponseEntity<String>deleteSecretaryByDni(@PathVariable String dni){
+    public ResponseEntity<Void>deleteSecretaryByDni(@PathVariable String dni){
         secretaryService.deleteSecretaryByDni(dni);
-        return ResponseEntity.ok("Secretary with dni "+dni+" successfully deleted");
+        return ResponseEntity.noContent().build();
     }
 
 }

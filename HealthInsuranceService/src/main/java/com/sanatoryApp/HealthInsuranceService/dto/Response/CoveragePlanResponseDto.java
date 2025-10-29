@@ -12,7 +12,7 @@ public record CoveragePlanResponseDto(
         BigDecimal coverageValuePercentage,
         boolean isActive
 ) {
-    public static CoveragePlanResponseDto fromEntity(CoveragePlan  coveragePlan){
+    public static CoveragePlanResponseDto fromEntity(CoveragePlan coveragePlan) {
         return new CoveragePlanResponseDto(
                 coveragePlan.getId(),
                 coveragePlan.getHealthInsuranceId(),

@@ -8,6 +8,6 @@ import java.util.List;
 public interface IDoctorRepository extends JpaRepository<Doctor,Long> {
     List<Doctor> findDoctorByFirstNameIgnoreCase(String firstName);
     List<Doctor> findDoctorByLastNameIgnoreCase(String lastName);
-    boolean existByEmail(String email);
-    boolean existByPhoneNumber(String phoneNumber);
+    boolean existsByEmail(String email);
+    boolean existsByPhoneNumber(String phoneNumber);
 }

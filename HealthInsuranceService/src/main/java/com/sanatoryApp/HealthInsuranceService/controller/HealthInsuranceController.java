@@ -6,103 +6,136 @@ import com.sanatoryApp.HealthInsuranceService.dto.Response.CoveragePlanResponseD
 import com.sanatoryApp.HealthInsuranceService.dto.Response.HealthInsuranceResponseDto;
 import com.sanatoryApp.HealthInsuranceService.dto.Response.PatientInsuranceResponseDto;
 import com.sanatoryApp.HealthInsuranceService.service.IHealthInsuranceService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/healthInsurance")
+@RequestMapping("/api/v1/health-insurances")
+@Tag(name = "Health Insurance", description = "Health Insurance management endpoints")
 public class HealthInsuranceController {
+
     private final IHealthInsuranceService healthInsuranceService;
 
-    /* GET ENDPOINTS */
-    @GetMapping("/id/{id}")
-    public ResponseEntity  <HealthInsuranceResponseDto> findHealthInsuranceById(@PathVariable Long id){
+    @GetMapping("/{id}")
+    @Operation(summary = "Find health insurance by ID")
+    public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceById(@PathVariable Long id) {
         return ResponseEntity.ok(healthInsuranceService.findHealthInsuranceById(id));
     }
 
-    @GetMapping("/companyName/{companyName}")
-    public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByCompanyName(@PathVariable String companyName){
+    @GetMapping("/company-name/{companyName}")
+    @Operation(summary = "Find health insurance by company name")
+    public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByCompanyName(
+            @PathVariable String companyName) {
         return ResponseEntity.ok(healthInsuranceService.findHealthInsuranceByCompanyName(companyName));
     }
 
-    @GetMapping("/companyCode/{companyCode}")
-    public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByCompanyCode(@PathVariable Long companyCode){
+    @GetMapping("/company-code/{companyCode}")
+    @Operation(summary = "Find health insurance by company code")
+    public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByCompanyCode(
+            @PathVariable Long companyCode) {
         return ResponseEntity.ok(healthInsuranceService.findHealthInsuranceByCompanyCode(companyCode));
     }
 
-    @GetMapping("/phoneNumber/{phoneNumber}")
-    public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByPhoneNumber(@PathVariable String phoneNumber){
+    @GetMapping("/phone/{phoneNumber}")
+    @Operation(summary = "Find health insurance by phone number")
+    public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByPhoneNumber(
+            @PathVariable String phoneNumber) {
         return ResponseEntity.ok(healthInsuranceService.findHealthInsuranceByPhoneNumber(phoneNumber));
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByEmail(@PathVariable String email){
+    @Operation(summary = "Find health insurance by email")
+    public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByEmail(@PathVariable String email) {
         return ResponseEntity.ok(healthInsuranceService.findHealthInsuranceByEmail(email));
     }
 
-    @GetMapping("search/{name}")
-    public ResponseEntity<List<HealthInsuranceResponseDto>> searchByName(@PathVariable String name){
+    @GetMapping("/search")
+    @Operation(summary = "Search health insurances by name")
+    public ResponseEntity<List<HealthInsuranceResponseDto>> searchByName(
+            @RequestParam(name = "name") String name) {
         return ResponseEntity.ok(healthInsuranceService.searchByName(name));
     }
 
-    @GetMapping("/coveragePlan/{insuranceId}")
-    public ResponseEntity<List<CoveragePlanResponseDto>> findCoveragePlansByInsuranceId(@PathVariable Long insuranceId){
+    @GetMapping("/{insuranceId}/coverage-plans")
+    @Operation(summary = "Find all coverage plans for a health insurance")
+    public ResponseEntity<List<CoveragePlanResponseDto>> findCoveragePlansByInsuranceId(
+            @PathVariable Long insuranceId) {
         return ResponseEntity.ok(healthInsuranceService.findCoveragePlans(insuranceId));
     }
 
-    @GetMapping("/patients/{insuranceId}")
-    public ResponseEntity<List<PatientInsuranceResponseDto>> findPatientsByInsuranceId(@PathVariable Long insuranceId){
+    @GetMapping("/{insuranceId}/patients")
+    @Operation(summary = "Find all patients for a health insurance")
+    public ResponseEntity<List<PatientInsuranceResponseDto>> findPatientsByInsuranceId(
+            @PathVariable Long insuranceId) {
         return ResponseEntity.ok(healthInsuranceService.findPatientsByInsuranceId(insuranceId));
     }
 
-    @GetMapping("/active/countPatients/{insuranceId}")
-    public ResponseEntity<Integer>countActivePatients(@PathVariable Long insuranceId){
+    @GetMapping("/{insuranceId}/patients/count")
+    @Operation(summary = "Count active patients for a health insurance")
+    public ResponseEntity<Integer> countActivePatients(@PathVariable Long insuranceId) {
         return ResponseEntity.ok(healthInsuranceService.countActivePatients(insuranceId));
     }
 
-    @GetMapping("/active/countPlans/{insuranceId}")
-    public ResponseEntity<Integer> countActivePlans(@PathVariable Long insuranceId){
+    @GetMapping("/{insuranceId}/coverage-plans/count")
+    @Operation(summary = "Count active coverage plans for a health insurance")
+    public ResponseEntity<Integer> countActivePlans(@PathVariable Long insuranceId) {
         return ResponseEntity.ok(healthInsuranceService.countActivePlans(insuranceId));
     }
 
-    /* POST ENDPOINT */
-    @PostMapping("/create")
-    public ResponseEntity <HealthInsuranceResponseDto> createHealthInsurance(@RequestBody @Valid HealthInsuranceCreateDto dto){
-        return ResponseEntity.ok(healthInsuranceService.createHealthInsurance(dto));
+    @PostMapping
+    @Operation(summary = "Create a new health insurance")
+    @ApiResponse(responseCode = "201", description = "Health insurance created successfully")
+    public ResponseEntity<HealthInsuranceResponseDto> createHealthInsurance(
+            @RequestBody @Valid HealthInsuranceCreateDto dto) {
+        HealthInsuranceResponseDto created = healthInsuranceService.createHealthInsurance(dto);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.id())
+                .toUri();
+
+        return ResponseEntity.created(location).body(created);
     }
 
-
-    /* PATCH ENDPOINT */
-    @PatchMapping("/update/{insuranceId}")
-    public ResponseEntity<HealthInsuranceResponseDto> updateHealthInsuranceById(@PathVariable Long id,
-                                                                                @RequestBody @Valid HealthInsuranceUpdateDto dto){
-        return ResponseEntity.ok(healthInsuranceService.updateHealthInsuranceById(id,dto));
+    @PatchMapping("/{insuranceId}")
+    @Operation(summary = "Update an existing health insurance")
+    public ResponseEntity<HealthInsuranceResponseDto> updateHealthInsuranceById(
+            @PathVariable Long insuranceId,
+            @RequestBody @Valid HealthInsuranceUpdateDto dto) {
+        return ResponseEntity.ok(healthInsuranceService.updateHealthInsuranceById(insuranceId, dto));
     }
 
-    @PatchMapping("/softDelete/{insuranceId}")
-    public ResponseEntity<String> softDeleteHealthInsuranceById(@PathVariable Long insuranceId){
+    @PatchMapping("/{insuranceId}/deactivate")
+    @Operation(summary = "Soft delete (deactivate) a health insurance")
+    public ResponseEntity<Void> softDeleteHealthInsuranceById(@PathVariable Long insuranceId) {
         healthInsuranceService.softDeleteHealthInsuranceById(insuranceId);
-        return ResponseEntity.ok("Health Insurance with id "+insuranceId+" successfully deactivated(soft deleted)");
+        return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/activate/{insuranceId}")
-    public ResponseEntity<String>activatedHealthInsuranceById(@PathVariable Long insuranceId){
-        healthInsuranceService.activatedHealthInsuranceById(insuranceId);
-        return ResponseEntity.ok("Health Insurance with id "+insuranceId+" successfully activated");
+    @PatchMapping("/{insuranceId}/activate")
+    @Operation(summary = "Activate a health insurance")
+    public ResponseEntity<Void> activateHealthInsuranceById(@PathVariable Long insuranceId) {
+        healthInsuranceService.activateHealthInsuranceById(insuranceId);
+        return ResponseEntity.noContent().build();
     }
 
-
-    /* DELETE ENDPOINT */
-    @DeleteMapping("/delete/{insuranceId}")
-    public ResponseEntity<String>deleteHealthInsuranceById(Long insuranceId){
+    @DeleteMapping("/{insuranceId}")
+    @Operation(summary = "Permanently delete a health insurance")
+    @ApiResponse(responseCode = "204", description = "Health insurance deleted successfully")
+    public ResponseEntity<Void> deleteHealthInsuranceById(@PathVariable Long insuranceId) {
         healthInsuranceService.deleteHealthInsuranceById(insuranceId);
-        return ResponseEntity.ok("Health Insurance with id "+insuranceId+" successfully deleted.");
+        return ResponseEntity.noContent().build();
     }
-
 }

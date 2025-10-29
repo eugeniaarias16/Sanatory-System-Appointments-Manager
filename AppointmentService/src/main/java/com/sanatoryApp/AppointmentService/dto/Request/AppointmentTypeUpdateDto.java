@@ -16,9 +16,9 @@ public class AppointmentTypeUpdateDto {
         private String description;
 
         @Min(value = 15, message = "Duration must be at least 15 minutes")
-        private Integer durationMin;  // Integer (wrapper) permite null
+        private Integer durationMin;
 
-        @Min(value = 0, message = "Buffer time cannot be negative")
+        @Positive(message = "Buffer time cannot be negative")
         private Integer bufferTimeMin;
 
         @DecimalMin(value = "1.0", message = "Price must be at least 1.00")

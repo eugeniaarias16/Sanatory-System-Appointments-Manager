@@ -1,9 +1,7 @@
 package com.sanatoryApp.AppointmentService.dto.Request;
 
 import com.sanatoryApp.AppointmentService.entity.AppointmentType;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -14,11 +12,14 @@ public class AppointmentTypeCreateDto {
     @NotBlank
     private String description;
     @NotNull
+    @Min(value = 15, message = "Duration must be at least 15 minutes")
     private int durationMin;
     @NotNull
+    @Positive(message = "Buffer time cannot be negative")
     private int bufferTimeMin;
     @NotNull
     @Positive
+    @DecimalMin(value = "1.0", message = "Price must be at least 1.00")
     private BigDecimal basePrice;
 
     public AppointmentType toEntity(){

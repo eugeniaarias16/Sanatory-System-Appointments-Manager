@@ -19,56 +19,65 @@ public class AvailabilityPatternController {
 
     private final IAvailabilityPatternService availabilityPatternService;
 
-    /*  GET ENDPOINTS  */
-
     @GetMapping("/id/{id}")
-    public ResponseEntity<AvailabilityPatternResponseDto> findAvailabilityPatternById(@PathVariable Long id){
+    public ResponseEntity<AvailabilityPatternResponseDto> findAvailabilityPatternById(@PathVariable Long id) {
         return ResponseEntity.ok(availabilityPatternService.findAvailabilityPatternById(id));
     }
 
     @GetMapping("/doctorCalendar/{id}")
-    public ResponseEntity<List<AvailabilityPatternResponseDto>> findAvailabilityPatternByDoctorCalendarId(@PathVariable Long id){
+    public ResponseEntity<List<AvailabilityPatternResponseDto>> findAvailabilityPatternByDoctorCalendarId(
+            @PathVariable Long id
+    ) {
         return ResponseEntity.ok(availabilityPatternService.findAvailabilityPatternByDoctorCalendarId(id));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<AvailabilityPatternResponseDto>> findByDoctorCalendarIdAndDayOfWeekAndIsActiveTrue(@RequestParam Long calendarId, @RequestParam DayOfWeek dayOfWeek){
-        return ResponseEntity.ok(availabilityPatternService.findByDoctorCalendarIdAndDayOfWeekAndIsActiveTrue(calendarId,dayOfWeek));
+    @GetMapping("/search/calendarAndDay")
+    public ResponseEntity<List<AvailabilityPatternResponseDto>> findByDoctorCalendarIdAndDayOfWeekAndIsActiveTrue(
+            @RequestParam Long calendarId,
+            @RequestParam DayOfWeek dayOfWeek
+    ) {
+        return ResponseEntity.ok(
+                availabilityPatternService.findByDoctorCalendarIdAndDayOfWeekAndIsActiveTrue(calendarId, dayOfWeek)
+        );
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<AvailabilityPatternResponseDto>>findByDoctorId(@PathVariable Long doctorId){
+    @GetMapping("/doctor/{doctorId}")
+    public ResponseEntity<List<AvailabilityPatternResponseDto>> findByDoctorId(@PathVariable Long doctorId) {
         return ResponseEntity.ok(availabilityPatternService.findByDoctorId(doctorId));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<AvailabilityPatternResponseDto>>findByDoctorIdAndDay(@PathVariable Long doctorId,@PathVariable DayOfWeek dayOfWeek){
-        return ResponseEntity.ok(availabilityPatternService.findByDoctorIdAndDay(doctorId,dayOfWeek));
+    @GetMapping("/doctor/{doctorId}/day/{dayOfWeek}")
+    public ResponseEntity<List<AvailabilityPatternResponseDto>> findByDoctorIdAndDay(
+            @PathVariable Long doctorId,
+            @PathVariable DayOfWeek dayOfWeek
+    ) {
+        return ResponseEntity.ok(availabilityPatternService.findByDoctorIdAndDay(doctorId, dayOfWeek));
     }
 
-
-    /*  POST ENDPOINTS  */
     @PostMapping("/create")
-    public ResponseEntity<AvailabilityPatternResponseDto> createAvailabilityPattern(@RequestBody @Valid AvailabilityPatternCreateDto dto){
+    public ResponseEntity<AvailabilityPatternResponseDto> createAvailabilityPattern(
+            @RequestBody @Valid AvailabilityPatternCreateDto dto
+    ) {
         return ResponseEntity.ok(availabilityPatternService.createAvailabilityPattern(dto));
     }
 
-    /*  PATCH ENDPOINTS  */
-
     @PatchMapping("/update/{id}")
-    public ResponseEntity<AvailabilityPatternResponseDto> updateAvailabilityPatternById(@PathVariable Long id,@RequestBody @Valid AvailabilityPatternUpdateDto dto){
-        return ResponseEntity.ok(availabilityPatternService.updateAvailabilityPatternById(id,dto));
+    public ResponseEntity<AvailabilityPatternResponseDto> updateAvailabilityPatternById(
+            @PathVariable Long id,
+            @RequestBody @Valid AvailabilityPatternUpdateDto dto
+    ) {
+        return ResponseEntity.ok(availabilityPatternService.updateAvailabilityPatternById(id, dto));
     }
 
     @PatchMapping("/softDelete/{id}")
-    public ResponseEntity<String>sofDeleteAvailabilityPatternById(Long id){
-        return ResponseEntity.ok("Availability Pattern with id "+id+" successfully deleted.");
+    public ResponseEntity<String> softDeleteAvailabilityPatternById(@PathVariable Long id) {
+        availabilityPatternService.softDeleteAvailabilityPatternById(id);
+        return ResponseEntity.ok("Availability Pattern with id " + id + " successfully deactivated.");
     }
 
-    /*  DELETE ENDPOINT  */
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteAvailabilityPatternById(@PathVariable Long id){
-        return ResponseEntity.ok("Availability Pattern with id "+id+" successfully deleted.");
+    public ResponseEntity<String> deleteAvailabilityPatternById(@PathVariable Long id) {
+        availabilityPatternService.deleteAvailabilityPatternById(id);
+        return ResponseEntity.ok("Availability Pattern with id " + id + " successfully deleted.");
     }
-
 }

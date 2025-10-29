@@ -19,8 +19,8 @@ public interface IDoctorService {
 
     List<DoctorResponseDto> findDoctorByFirstName(String firstName);
     List<DoctorResponseDto> findDoctorByLastName(String lastName);
-    boolean existByEmail(String email);
-    boolean existByPhoneNumber(String phoneNumber);
+    boolean existsByEmail(String email);
+    boolean existsByPhoneNumber(String phoneNumber);
 
 
 }

@@ -8,49 +8,54 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface IAppointmentRepository extends JpaRepository<Appointment,Long> {
 
-    //SEARCH BY PATIENT
-    List<Appointment>findByPatientId(Long patientId);
-    List<Appointment>findByPatientInsuranceId(Long insuranceId);
+    List<Appointment> findByPatientId(Long patientId);
+    List<Appointment> findByPatientInsuranceId(Long insuranceId);
     List<Appointment> findByPatientIdAndDate(Long patientId, LocalDateTime date);
-    List<Appointment> findByPatientIdAndAppointmentDateBetween(
+    List<Appointment> findByPatientIdAndDateBetween(
             Long patientId,
             LocalDateTime startDate,
             LocalDateTime endDate
     );
 
+    @Query("SELECT a FROM Appointment a " +
+            "WHERE a.patientId = :patientId " +
+            "AND a.date >= :now " +
+            "ORDER BY a.date ASC")
     List<Appointment> findUpcomingAppointmentsByPatientId(
             @Param("patientId") Long patientId,
             @Param("now") LocalDateTime now
     );
 
-
-    //SEARCH BY DOCTOR
     List<Appointment> findByDoctorId(Long doctorId);
-    List<Appointment> findByDoctorIdAndAppointmentDateBetween(
+    List<Appointment> findByDoctorIdAndDateBetween(
             Long doctorId,
             LocalDateTime startDate,
             LocalDateTime endDate
     );
     List<Appointment> findByDoctorIdAndDoctorCalendarId(Long doctorId, Long calendarId);
 
+    @Query("SELECT a FROM Appointment a " +
+            "WHERE a.doctorId = :doctorId " +
+            "AND DATE(a.date) = :today")
     List<Appointment> findTodayAppointmentsByDoctorId(
             @Param("doctorId") Long doctorId,
             @Param("today") LocalDate today
     );
 
+    @Query("SELECT a FROM Appointment a " +
+            "WHERE a.patientId = :patientId " +
+            "AND a.doctorId = :doctorId " +
+            "AND DATE(a.date) = :date")
+    Optional<Appointment> findAppointmentByPatientIdAndDoctorIdAndDate(
+            @Param("patientId") Long patientId,
+            @Param("doctorId") Long doctorId,
+            @Param("date") LocalDate date
+    );
 
-    @Query( "UPDATE Appointment a "+
-            "SET a.status=AppointmentStatus.CANCELLED "+
-            "WHERE a.id=:id ")
-    void cancelAppointmentById(@Param("id") Long id);
-
-    @Query( "UPDATE Appointment"+
-            "SET status=AppointmentStatus.CANCELLED"+
-            "WHERE patientId=:patientId AND doctorId=:doctorCalendarId AND date=:date")
-    void cancelAppointmentByPatientIdAndDoctorIdAndDate(@Param("patientId") Long patientId, @Param("doctorId") Long doctorCalendarId, @Param("date") LocalDateTime date);
 
 
 }

@@ -9,5 +9,5 @@ public interface ISecretaryRepository extends JpaRepository<Secretary,Long> {
     Optional<Secretary> findSecretaryByEmail(String email);
     Optional<Secretary> findSecretaryByDni(String dni);
     boolean existsByEmail(String email);
-    boolean existByDni(String dni);
+    boolean existsByDni(String dni);
 }

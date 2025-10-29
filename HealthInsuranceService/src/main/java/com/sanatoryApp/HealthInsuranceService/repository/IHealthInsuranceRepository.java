@@ -8,25 +8,31 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface IHealthInsuranceRepository extends JpaRepository<HealthInsurance,Long> {
+public interface IHealthInsuranceRepository extends JpaRepository<HealthInsurance, Long> {
 
-    Optional<HealthInsurance>findByCompanyName(String companyName);
+    Optional<HealthInsurance> findByCompanyName(String companyName);
+
     Optional<HealthInsurance> findByCompanyCode(Long companyCode);
-    Optional<HealthInsurance>findByEmail(String email);
-    Optional<HealthInsurance>findByPhoneNumber(String phoneNumber);
 
-    List<HealthInsurance>findByIsActiveTrue();
+    Optional<HealthInsurance> findByEmail(String email);
 
-    @Query( "SELECT h FROM HealthInsurance h"+
-            "WHERE LOWER(h.companyName) LIKE LOWER(CONCAT('%',:name,'%')"+
+    Optional<HealthInsurance> findByPhoneNumber(String phoneNumber);
+
+    List<HealthInsurance> findByIsActiveTrue();
+
+    @Query("SELECT h FROM HealthInsurance h " +
+            "WHERE LOWER(h.companyName) LIKE LOWER(CONCAT('%', :name, '%')) " +
             "ORDER BY h.companyName")
     List<HealthInsurance> findByCompanyNameContaining(@Param("name") String name);
 
-    Boolean existsByCompanyName(String companyName);
-    Boolean existsByCompanyCode(Long companyCode);
-    Boolean existsByPhoneNumber(String phoneNumber);
-    Boolean existsByEmail(String email);
+
+    boolean existsByCompanyName(String companyName);
+
+    boolean existsByCompanyCode(Long companyCode);
+
+    boolean existsByPhoneNumber(String phoneNumber);
+
+    boolean existsByEmail(String email);
+
     boolean existsById(Long id);
-
-
 }

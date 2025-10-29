@@ -12,7 +12,7 @@ public record PatientInsuranceResponseDto(
         Long id,
 
         @Schema(description = "Patient unique identifier")
-        Long patientDni,
+        String patientDni,
 
         @Schema(description = "Insurance credential number")
         String credentialNumber,

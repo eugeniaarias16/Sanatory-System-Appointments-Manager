@@ -1,10 +1,6 @@
 package com.sanatoryApp.HealthInsuranceService.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +15,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CoveragePlan {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,23 +26,11 @@ public class CoveragePlan {
     @Column(unique = true)
     private String name;
 
-
     private String description;
 
     @Column(nullable = false, precision = 5, scale = 2)
-    @NotNull(message = "Coverage percentage cannot be null")
-    @DecimalMin(value = "0.00", message = "Coverage percentage must be at least 0")
-    @DecimalMax(value = "100.00", message = "Coverage percentage must not exceed 100")
     private BigDecimal coverageValuePercentage;
 
-
-    private boolean isActive;
-
-
-    @PrePersist
-    protected void setDefaults() {
-        if (this.isActive == false) {
-            this.isActive = true;
-        }
-    }
+    @Column(nullable = false)
+    private boolean isActive = true;
 }

@@ -1,4 +1,5 @@
 package com.sanatoryApp.CalendarService.dto.Response;
+
 import com.sanatoryApp.CalendarService.entity.AvailabilityPattern;
 
 import java.time.DayOfWeek;
@@ -9,15 +10,17 @@ public record AvailabilityPatternResponseDto(
         Long doctorCalendarId,
         DayOfWeek dayOfWeek,
         LocalTime startTime,
-        LocalTime endTime
+        LocalTime endTime,
+        boolean isActive
 ) {
-    public static AvailabilityPatternResponseDto fromEntity(AvailabilityPattern availabilityPattern){
+    public static AvailabilityPatternResponseDto fromEntity(AvailabilityPattern availabilityPattern) {
         return new AvailabilityPatternResponseDto(
                 availabilityPattern.getId(),
                 availabilityPattern.getDoctorCalendarId(),
                 availabilityPattern.getDayOfWeek(),
                 availabilityPattern.getStartTime(),
-                availabilityPattern.getEndTime()
+                availabilityPattern.getEndTime(),
+                availabilityPattern.isActive()
         );
     }
 }

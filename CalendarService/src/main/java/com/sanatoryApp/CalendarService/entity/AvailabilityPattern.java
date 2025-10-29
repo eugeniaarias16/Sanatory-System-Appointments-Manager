@@ -8,7 +8,6 @@ import lombok.Setter;
 
 import java.time.LocalTime;
 
-
 @Getter
 @Setter
 @AllArgsConstructor
@@ -34,11 +33,5 @@ public class AvailabilityPattern {
     private LocalTime endTime;
 
     @Column(nullable = false)
-    private boolean isActive=true;
-
-    public void setIsActive(boolean isActive){
-        this.isActive=isActive;
-    }
-
-
+    private boolean isActive = true;
 }

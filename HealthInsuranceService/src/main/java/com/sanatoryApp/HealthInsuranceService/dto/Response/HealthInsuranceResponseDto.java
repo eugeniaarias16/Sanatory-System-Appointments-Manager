@@ -1,28 +1,27 @@
 package com.sanatoryApp.HealthInsuranceService.dto.Response;
 
-
 import com.sanatoryApp.HealthInsuranceService.entity.HealthInsurance;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-
-@Schema(description = "Dto to return public responses about Health Insurance Entity.")
+@Schema(description = "DTO for Health Insurance entity responses")
 public record HealthInsuranceResponseDto(
-        @Schema(description = "Unique insurance ID")
+
+        @Schema(description = "Unique identifier", example = "1")
         Long id,
 
-        @Schema(description = "Company name", example = "Health Insurance Company")
+        @Schema(description = "Insurance company name", example = "Blue Cross Health Insurance")
         String companyName,
 
-        @Schema(description = "Company code")
+        @Schema(description = "Company identification code", example = "12345")
         Long companyCode,
 
-        @Schema(description = "Contact telephone number")
+        @Schema(description = "Contact phone number", example = "+5491112345678")
         String phoneNumber,
 
-        @Schema(description = "Contact email")
+        @Schema(description = "Contact email address", example = "contact@insurance.com")
         String email,
 
-        @Schema(description = "Active/inactive status")
+        @Schema(description = "Indicates if the insurance is active", example = "true")
         boolean isActive
 ) {
 
@@ -33,6 +32,7 @@ public record HealthInsuranceResponseDto(
                 healthInsurance.getCompanyCode(),
                 healthInsurance.getPhoneNumber(),
                 healthInsurance.getEmail(),
-                healthInsurance.isActive());
+                healthInsurance.isActive()
+        );
     }
 }

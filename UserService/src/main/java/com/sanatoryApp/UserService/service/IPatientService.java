@@ -19,7 +19,7 @@ public interface IPatientService {
 
     PatientResponseDto findPatientByDni(String dni);
     PatientResponseDto findPatientByEmail(String email);
-    boolean existByDni(String dni);
+    boolean existsByDni(String dni);
     boolean existsByEmail(String email);
     boolean existsByPhoneNumber(String phoneNumber);
 }

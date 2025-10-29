@@ -9,35 +9,49 @@ import com.sanatoryApp.HealthInsuranceService.dto.Response.PatientInsuranceRespo
 import java.util.List;
 
 public interface IHealthInsuranceService {
-    /* BASIC CRUD */
+
+    // CRUD Operations
     HealthInsuranceResponseDto findHealthInsuranceById(Long id);
+
     HealthInsuranceResponseDto createHealthInsurance(HealthInsuranceCreateDto dto);
+
     HealthInsuranceResponseDto updateHealthInsuranceById(Long id, HealthInsuranceUpdateDto dto);
+
     void deleteHealthInsuranceById(Long id);
+
     void softDeleteHealthInsuranceById(Long id);
 
-    void activatedHealthInsuranceById(Long id);
+    void activateHealthInsuranceById(Long id);
 
-    /*  SEARCH  */
+    // Search Operations
     HealthInsuranceResponseDto findHealthInsuranceByCompanyName(String companyName);
+
     HealthInsuranceResponseDto findHealthInsuranceByCompanyCode(Long companyCode);
+
     HealthInsuranceResponseDto findHealthInsuranceByPhoneNumber(String phoneNumber);
+
     HealthInsuranceResponseDto findHealthInsuranceByEmail(String email);
+
     List<HealthInsuranceResponseDto> searchByName(String name);
 
-    /*  METHODS FOR ACCESSING RELATIONSHIPS  */
+    // Relationship Access Methods
     List<CoveragePlanResponseDto> findCoveragePlans(Long insuranceId);
+
     List<PatientInsuranceResponseDto> findPatientsByInsuranceId(Long insuranceId);
 
+    // Existence Verification Methods - use primitive boolean
+    boolean existsByCompanyName(String companyName);
 
-    /* METHODS FOR VERIFYING EXISTING */
-    Boolean existsByCompanyName(String companyName);
-    Boolean existsByCompanyCode(Long companyCode);
-    Boolean existsByPhoneNumber(String phoneNumber);
-    Boolean existsByEmail(String email);
+    boolean existsByCompanyCode(Long companyCode);
+
+    boolean existsByPhoneNumber(String phoneNumber);
+
+    boolean existsByEmail(String email);
+
     boolean existsById(Long id);
 
-    /* STATISTICS */
+    // Statistics Methods
     Integer countActivePatients(Long insuranceId);
+
     Integer countActivePlans(Long insuranceId);
 }

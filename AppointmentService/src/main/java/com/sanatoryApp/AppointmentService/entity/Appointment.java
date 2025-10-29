@@ -48,10 +48,12 @@ public class Appointment {
     @Column(nullable = false)
     private BigDecimal consultationCost;
 
+    @Column(nullable = false)
     private  BigDecimal coveragePercentage;
 
     @Column(nullable = false)
     private  BigDecimal amountToPay;
+
     private String notes;
 
     @Column(nullable = false,updatable = false)

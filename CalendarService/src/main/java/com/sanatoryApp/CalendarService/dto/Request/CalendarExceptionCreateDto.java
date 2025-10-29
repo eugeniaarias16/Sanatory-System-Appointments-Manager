@@ -10,30 +10,40 @@ import java.time.LocalTime;
 
 @Data
 public class CalendarExceptionCreateDto {
-        @NotNull
+
+        @NotNull(message = "Doctor Calendar ID is required")
         private Long doctorCalendarId;
-        @NotNull
+
+        @NotNull(message = "Date is required")
         private LocalDate date;
-        @NotNull
+
+        @NotNull(message = "Start time is required")
         private LocalTime startTime;
-        @NotNull
+
+        @NotNull(message = "End time is required")
         private LocalTime endTime;
-        @NotNull
+
+        @NotNull(message = "Exception type is required")
         private ExceptionType exceptionType;
+
         private String reason;
-        @NotNull
+
+        @NotNull(message = "isGlobal flag is required")
         private boolean isGlobal;
 
-        public CalendarException toEntity(){
-                CalendarException calendarException=new CalendarException();
+        public CalendarException toEntity() {
+                CalendarException calendarException = new CalendarException();
                 calendarException.setDoctorCalendarId(doctorCalendarId);
                 calendarException.setDate(date);
                 calendarException.setStartTime(startTime);
                 calendarException.setEndTime(endTime);
                 calendarException.setExceptionType(exceptionType);
-                calendarException.setReason(reason.toLowerCase());
-                calendarException.setGlobal(isGlobal);
 
+                if (reason != null && !reason.trim().isEmpty()) {
+                        calendarException.setReason(reason.trim().toLowerCase());
+                }
+
+                calendarException.setGlobal(isGlobal);
                 return calendarException;
         }
 }
