@@ -4,6 +4,8 @@ import com.sanatoryApp.HealthInsuranceService.dto.Request.PatientInsuranceCreate
 import com.sanatoryApp.HealthInsuranceService.dto.Request.externalService.PatientDto;
 import com.sanatoryApp.HealthInsuranceService.dto.Response.PatientInsuranceCreateResponseDto;
 import com.sanatoryApp.HealthInsuranceService.dto.Response.PatientInsuranceResponseDto;
+import com.sanatoryApp.HealthInsuranceService.entity.CoveragePlan;
+import com.sanatoryApp.HealthInsuranceService.entity.HealthInsurance;
 import com.sanatoryApp.HealthInsuranceService.entity.PatientInsurance;
 import com.sanatoryApp.HealthInsuranceService.exception.ResourceNotFound;
 import com.sanatoryApp.HealthInsuranceService.repository.IPatientInsuranceRepository;
@@ -21,6 +23,7 @@ import java.util.List;
 @Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+
 public class PatientInsuranceService implements IPatientInsuranceService {
 
     private final IPatientInsuranceRepository patientInsuranceRepository;
@@ -28,11 +31,17 @@ public class PatientInsuranceService implements IPatientInsuranceService {
     private final ICoveragePlanService coveragePlanService;
     private final UserServiceApi userServiceApi;
 
+
+    @Override
+    public PatientInsurance getPatientInsuranceById(Long id) {
+        return patientInsuranceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Patient Insurance not found with id: " + id));
+    }
+
     @Override
     public PatientInsuranceResponseDto findPatientInsuranceById(Long id) {
         log.debug("Attempting to find Patient Insurance by Id: {}", id);
-        PatientInsurance patientInsurance = patientInsuranceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Patient Insurance not found with id: " + id));
+        PatientInsurance patientInsurance = getPatientInsuranceById(id);
         return PatientInsuranceResponseDto.fromEntity(patientInsurance);
     }
 
@@ -50,20 +59,16 @@ public class PatientInsuranceService implements IPatientInsuranceService {
             throw new RuntimeException("Error communicating with User Service: " + e.getMessage(), e);
         }
 
-        if (!healthInsuranceService.existsById(dto.getHealthInsuranceId())) {
-            throw new ResourceNotFound("Health Insurance with id: " + dto.getHealthInsuranceId() + " not found.");
-        }
+        HealthInsurance healthInsurance=healthInsuranceService.getHealthInsuranceById(dto.getHealthInsuranceId());
 
-        if (!coveragePlanService.existsById(dto.getCoveragePlanId())) {
-            throw new ResourceNotFound("Coverage Plan with id " + dto.getCoveragePlanId() + " not found.");
-        }
+        CoveragePlan coveragePlan=coveragePlanService.getCoveragePlanById(dto.getCoveragePlanId());
 
         if (!coveragePlanService.existsByIdAndHealthInsuranceId(dto.getCoveragePlanId(), dto.getHealthInsuranceId())) {
             throw new IllegalArgumentException("No coverage Plan found with id: " + dto.getCoveragePlanId() +
                     " and Health Insurance id: " + dto.getHealthInsuranceId());
         }
 
-        PatientInsurance patientInsurance = dto.toEntity();
+        PatientInsurance patientInsurance = dto.toEntity(healthInsurance,coveragePlan);
         PatientInsurance saved = patientInsuranceRepository.save(patientInsurance);
         log.info("Patient Insurance with id {} successfully created", saved.getId());
 
@@ -74,15 +79,12 @@ public class PatientInsuranceService implements IPatientInsuranceService {
     @Override
     public PatientInsuranceResponseDto updatePatientInsuranceCoveragePlanById(Long id, Long coveragePlanId) {
         log.debug("Attempting to update the plan for the patient with the ID: {}", id);
-        PatientInsurance existingPatientInsurance = patientInsuranceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Patient Insurance not found with id: " + id));
+        PatientInsurance existingPatientInsurance = getPatientInsuranceById(id);
 
-        if (!coveragePlanService.existsById(coveragePlanId)) {
-            throw new ResourceNotFound("Coverage Plan with id " + coveragePlanId + " not found.");
-        }
+       CoveragePlan coveragePlan=coveragePlanService.getCoveragePlanById(id);
 
         log.info("Updating the patient's coverage plan to the new plan with the ID: {}", coveragePlanId);
-        existingPatientInsurance.setCoveragePlanId(coveragePlanId);
+        existingPatientInsurance.setCoveragePlan(coveragePlan);
 
         PatientInsurance saved = patientInsuranceRepository.save(existingPatientInsurance);
         return PatientInsuranceResponseDto.fromEntity(saved);
@@ -92,8 +94,7 @@ public class PatientInsuranceService implements IPatientInsuranceService {
     @Override
     public void deletePatientInsuranceById(Long id) {
         log.debug("Attempting to delete Patient Insurance with id {}", id);
-        PatientInsurance patientInsurance = patientInsuranceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Patient Insurance not found with id: " + id));
+        PatientInsurance patientInsurance = getPatientInsuranceById(id);
         patientInsuranceRepository.delete(patientInsurance);
         log.info("Patient Insurance with id {} successfully deleted", id);
     }
@@ -102,8 +103,7 @@ public class PatientInsuranceService implements IPatientInsuranceService {
     @Override
     public void softDeletePatientInsuranceById(Long id) {
         log.debug("Attempting to soft delete Patient Insurance with id {}", id);
-        PatientInsurance patientInsurance = patientInsuranceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Patient Insurance not found with id: " + id));
+        PatientInsurance patientInsurance = getPatientInsuranceById(id);
         patientInsurance.setIsActive(false);
         patientInsuranceRepository.save(patientInsurance);
         log.info("Patient Insurance with id {} successfully deactivated (soft deleted)", id);
@@ -113,8 +113,7 @@ public class PatientInsuranceService implements IPatientInsuranceService {
     @Override
     public void activatePatientInsuranceById(Long id) {
         log.debug("Attempting to activate Patient Insurance with id {}", id);
-        PatientInsurance patientInsurance = patientInsuranceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Patient Insurance not found with id: " + id));
+        PatientInsurance patientInsurance = getPatientInsuranceById(id);
         patientInsurance.setIsActive(true);
         patientInsuranceRepository.save(patientInsurance);
         log.info("Patient Insurance with id {} successfully activated.", id);
@@ -147,7 +146,7 @@ public class PatientInsuranceService implements IPatientInsuranceService {
 
     @Override
     public List<PatientInsuranceResponseDto> findPatientInsuranceByHealthInsurance(Long id) {
-        List<PatientInsurance> patientInsuranceList = patientInsuranceRepository.findByHealthInsuranceId(id);
+        List<PatientInsurance> patientInsuranceList = patientInsuranceRepository.findByHealthInsurance_Id(id);
         if (patientInsuranceList.isEmpty()) {
             throw new ResourceNotFound("No Patients Insurance found with health insurance id " + id);
         }
@@ -158,7 +157,7 @@ public class PatientInsuranceService implements IPatientInsuranceService {
 
     @Override
     public List<PatientInsuranceResponseDto> findPatientInsuranceByCoveragePlanId(Long id) {
-        List<PatientInsurance> patientInsuranceList = patientInsuranceRepository.findByCoveragePlanId(id);
+        List<PatientInsurance> patientInsuranceList = patientInsuranceRepository.findByCoveragePlan_Id(id);
         if (patientInsuranceList.isEmpty()) {
             throw new ResourceNotFound("No Patients Insurance found with coverage plan id " + id);
         }

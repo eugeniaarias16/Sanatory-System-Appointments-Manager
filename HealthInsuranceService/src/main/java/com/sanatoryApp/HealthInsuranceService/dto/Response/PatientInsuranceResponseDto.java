@@ -1,5 +1,6 @@
 package com.sanatoryApp.HealthInsuranceService.dto.Response;
 
+import com.sanatoryApp.HealthInsuranceService.entity.CoveragePlan;
 import com.sanatoryApp.HealthInsuranceService.entity.PatientInsurance;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -20,8 +21,14 @@ public record PatientInsuranceResponseDto(
         @Schema(description = "Health insurance company identifier")
         Long healthInsuranceId,
 
+        @Schema(description = "Health insurance company name")
+        String healthInsuranceName,
+
         @Schema(description = "Coverage plan identifier")
         Long coveragePlanId,
+
+        @Schema(description = "Coverage plan name")
+        String coveragePlanName,
 
         @Schema(description = "Record creation date")
         LocalDate createdAt,
@@ -34,8 +41,10 @@ public record PatientInsuranceResponseDto(
                 patientInsurance.getId(),
                 patientInsurance.getPatientDni(),
                 patientInsurance.getCredentialNumber(),
-                patientInsurance.getHealthInsuranceId(),
-                patientInsurance.getCoveragePlanId(),
+                patientInsurance.getHealthInsurance().getId(),
+                patientInsurance.getHealthInsurance().getCompanyName(),
+                patientInsurance.getCoveragePlan().getId(),
+                patientInsurance.getCoveragePlan().getName(),
                 patientInsurance.getCreatedAt(),
                 patientInsurance.getIsActive()
         );

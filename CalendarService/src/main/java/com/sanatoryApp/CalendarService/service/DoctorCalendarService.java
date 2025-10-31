@@ -28,11 +28,17 @@ public class DoctorCalendarService implements IDoctorCalendarService {
     private final IDoctorCalendarRepository doctorCalendarRepository;
     private final UserServiceApi userServiceApi;
 
+
+    @Override
+    public DoctorCalendar getDoctorCalendarEntityById(Long id) {
+        return doctorCalendarRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFound("Doctor Calendar not found with id " + id));
+    }
+
     @Override
     @Transactional(readOnly = true)
     public DoctorCalendarResponseDto findDoctorCalendarById(Long id) {
-        DoctorCalendar doctorCalendar = doctorCalendarRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new ResourceNotFound("Doctor Calendar not found with id " + id));
+        DoctorCalendar doctorCalendar = getDoctorCalendarEntityById(id);
         return DoctorCalendarResponseDto.fromEntity(doctorCalendar);
     }
 
@@ -69,8 +75,7 @@ public class DoctorCalendarService implements IDoctorCalendarService {
 
     @Override
     public DoctorCalendarResponseDto updateDoctorCalendar(Long id, DoctorCalendarUpdateDto dto) {
-        DoctorCalendar existingDoctorCalendar = doctorCalendarRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new ResourceNotFound("Doctor Calendar not found with id " + id));
+        DoctorCalendar existingDoctorCalendar = getDoctorCalendarEntityById(id);
 
         if (dto.doctorId() != null) {
             DoctorDto doctorDto = findDoctorById(dto.doctorId());
@@ -110,8 +115,7 @@ public class DoctorCalendarService implements IDoctorCalendarService {
     public void deleteDoctorCalendar(Long id) {
         log.debug("Attempting to soft delete Doctor Calendar with id {}", id);
 
-        DoctorCalendar existingDoctorCalendar = doctorCalendarRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new ResourceNotFound("Doctor Calendar not found with id " + id));
+        DoctorCalendar existingDoctorCalendar = getDoctorCalendarEntityById(id);
 
         existingDoctorCalendar.setActive(false);
         doctorCalendarRepository.save(existingDoctorCalendar);

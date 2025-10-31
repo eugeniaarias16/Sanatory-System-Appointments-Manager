@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "coverages_plans")
@@ -20,8 +22,9 @@ public class CoveragePlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long healthInsuranceId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "health_insurance_id",nullable = false)
+    private HealthInsurance healthInsurance;
 
     @Column(unique = true)
     private String name;
@@ -33,4 +36,8 @@ public class CoveragePlan {
 
     @Column(nullable = false)
     private boolean isActive = true;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coverage_plan_id")
+    private List<PatientInsurance>patientInsurances=new ArrayList<>();
 }

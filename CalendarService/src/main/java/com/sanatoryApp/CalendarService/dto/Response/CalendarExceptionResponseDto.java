@@ -12,7 +12,7 @@ import java.time.LocalTime;
 public record CalendarExceptionResponseDto(
         Long id,
         Long doctorCalendarId,
-        @FutureOrPresent(message = "Exception date cannot be in the past")
+        String doctorCalendarName,
         LocalDate date,
         LocalTime startTime,
         LocalTime endTime,
@@ -25,7 +25,8 @@ public record CalendarExceptionResponseDto(
         public static CalendarExceptionResponseDto fromEntity(CalendarException calendarException){
                 return new CalendarExceptionResponseDto(
                         calendarException.getId(),
-                        calendarException.getDoctorCalendarId(),
+                        calendarException.getDoctorCalendar().getId(),
+                        calendarException.getDoctorCalendar().getName(),
                         calendarException.getDate(),
                         calendarException.getStartTime(),
                         calendarException.getEndTime(),

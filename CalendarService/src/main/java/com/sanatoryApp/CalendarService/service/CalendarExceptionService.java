@@ -4,6 +4,7 @@ import com.sanatoryApp.CalendarService.dto.Request.CalendarExceptionCreateDto;
 import com.sanatoryApp.CalendarService.dto.Request.CalendarExceptionUpdateDto;
 import com.sanatoryApp.CalendarService.dto.Response.CalendarExceptionResponseDto;
 import com.sanatoryApp.CalendarService.entity.CalendarException;
+import com.sanatoryApp.CalendarService.entity.DoctorCalendar;
 import com.sanatoryApp.CalendarService.entity.ExceptionType;
 import com.sanatoryApp.CalendarService.exception.ResourceNotFound;
 import com.sanatoryApp.CalendarService.repository.ICalendarExceptionRepository;
@@ -40,7 +41,7 @@ public class CalendarExceptionService implements ICalendarExceptionService {
     public CalendarExceptionResponseDto createCalendarException(CalendarExceptionCreateDto dto) {
         validateTimeRange(dto.getStartTime(), dto.getEndTime());
 
-        doctorCalendarService.findDoctorCalendarById(dto.getDoctorCalendarId());
+        DoctorCalendar doctorCalendar =doctorCalendarService.getDoctorCalendarEntityById(dto.getDoctorCalendarId());
 
         validateFutureDate(dto.getDate());
 
@@ -48,7 +49,7 @@ public class CalendarExceptionService implements ICalendarExceptionService {
 
         validateNoConflictException(dto.getDoctorCalendarId(), dto.getDate(), 0L);
 
-        CalendarException calendarException = dto.toEntity();
+        CalendarException calendarException = dto.toEntity(doctorCalendar);
 
         if (isFullDayRange(dto.getStartTime(), dto.getEndTime())) {
             log.info("Creating full-day exception for {}", dto.getDate());
@@ -75,16 +76,14 @@ public class CalendarExceptionService implements ICalendarExceptionService {
                 .orElseThrow(() -> new ResourceNotFound("No calendar exception found with id " + id));
 
         if (dto.doctorCalendarId() != null) {
-            doctorCalendarService.findDoctorCalendarById(dto.doctorCalendarId());
-            existingCalendarException.setDoctorCalendarId(dto.doctorCalendarId());
+            DoctorCalendar doctorCalendar =doctorCalendarService.getDoctorCalendarEntityById(dto.doctorCalendarId());
+            existingCalendarException.setDoctorCalendar(doctorCalendar);
         }
 
         if (dto.date() != null) {
             validateFutureDate(dto.date());
 
-            Long calendarIdToValidate = dto.doctorCalendarId() != null
-                    ? dto.doctorCalendarId()
-                    : existingCalendarException.getDoctorCalendarId();
+            Long calendarIdToValidate =existingCalendarException.getDoctorCalendar().getId();
 
             validateNoConflictException(calendarIdToValidate, dto.date(), id);
             existingCalendarException.setDate(dto.date());

@@ -1,6 +1,7 @@
 package com.sanatoryApp.CalendarService.dto.Request;
 
 import com.sanatoryApp.CalendarService.entity.AvailabilityPattern;
+import com.sanatoryApp.CalendarService.entity.DoctorCalendar;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -22,9 +23,9 @@ public class AvailabilityPatternCreateDto {
         @NotNull(message = "End time is mandatory")
         private LocalTime endTime;
 
-        public AvailabilityPattern toEntity() {
+        public AvailabilityPattern toEntity(DoctorCalendar doctorCalendar) {
                 AvailabilityPattern pattern = new AvailabilityPattern();
-                pattern.setDoctorCalendarId(this.doctorCalendarId);
+                pattern.setDoctorCalendar(doctorCalendar);
                 pattern.setDayOfWeek(this.dayOfWeek);
                 pattern.setStartTime(this.startTime);
                 pattern.setEndTime(this.endTime);

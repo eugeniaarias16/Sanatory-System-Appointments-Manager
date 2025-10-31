@@ -5,13 +5,14 @@ import com.sanatoryApp.HealthInsuranceService.dto.Request.HealthInsuranceUpdateD
 import com.sanatoryApp.HealthInsuranceService.dto.Response.CoveragePlanResponseDto;
 import com.sanatoryApp.HealthInsuranceService.dto.Response.HealthInsuranceResponseDto;
 import com.sanatoryApp.HealthInsuranceService.dto.Response.PatientInsuranceResponseDto;
+import com.sanatoryApp.HealthInsuranceService.service.ICoveragePlanService;
 import com.sanatoryApp.HealthInsuranceService.service.IHealthInsuranceService;
+import com.sanatoryApp.HealthInsuranceService.service.IPatientInsuranceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -26,6 +27,8 @@ import java.util.List;
 public class HealthInsuranceController {
 
     private final IHealthInsuranceService healthInsuranceService;
+    private final ICoveragePlanService coveragePlanService;
+    private  final IPatientInsuranceService patientInsuranceService;
 
     @GetMapping("/{id}")
     @Operation(summary = "Find health insurance by ID")
@@ -69,28 +72,28 @@ public class HealthInsuranceController {
 
     @GetMapping("/{insuranceId}/coverage-plans")
     @Operation(summary = "Find all coverage plans for a health insurance")
-    public ResponseEntity<List<CoveragePlanResponseDto>> findCoveragePlansByInsuranceId(
-            @PathVariable Long insuranceId) {
-        return ResponseEntity.ok(healthInsuranceService.findCoveragePlans(insuranceId));
+    public ResponseEntity<List<CoveragePlanResponseDto>> findCoveragePlans(@PathVariable Long insuranceId) {
+       List<CoveragePlanResponseDto>plans= coveragePlanService.findByHealthInsuranceIdAndIsActiveTrue(insuranceId);
+       return ResponseEntity.ok(plans);
     }
 
     @GetMapping("/{insuranceId}/patients")
     @Operation(summary = "Find all patients for a health insurance")
     public ResponseEntity<List<PatientInsuranceResponseDto>> findPatientsByInsuranceId(
             @PathVariable Long insuranceId) {
-        return ResponseEntity.ok(healthInsuranceService.findPatientsByInsuranceId(insuranceId));
+        return ResponseEntity.ok(patientInsuranceService.findPatientInsuranceByHealthInsurance(insuranceId));
     }
 
-    @GetMapping("/{insuranceId}/patients/count")
+    @GetMapping("/{insuranceId}/active-patients-count")
     @Operation(summary = "Count active patients for a health insurance")
     public ResponseEntity<Integer> countActivePatients(@PathVariable Long insuranceId) {
-        return ResponseEntity.ok(healthInsuranceService.countActivePatients(insuranceId));
+        return ResponseEntity.ok(patientInsuranceService.countActivePatientsByInsuranceId(insuranceId));
     }
 
-    @GetMapping("/{insuranceId}/coverage-plans/count")
+    @GetMapping("/{insuranceId}/active-plans-count")
     @Operation(summary = "Count active coverage plans for a health insurance")
     public ResponseEntity<Integer> countActivePlans(@PathVariable Long insuranceId) {
-        return ResponseEntity.ok(healthInsuranceService.countActivePlans(insuranceId));
+        return ResponseEntity.ok(coveragePlanService.countActivePlanByHealthInsurance(insuranceId));
     }
 
     @PostMapping

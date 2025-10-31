@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 public record CoveragePlanResponseDto(
         Long id,
         Long healthInsuranceId,
+        String healthInsuranceName,
         String name,
         String description,
         BigDecimal coverageValuePercentage,
@@ -15,7 +16,8 @@ public record CoveragePlanResponseDto(
     public static CoveragePlanResponseDto fromEntity(CoveragePlan coveragePlan) {
         return new CoveragePlanResponseDto(
                 coveragePlan.getId(),
-                coveragePlan.getHealthInsuranceId(),
+                coveragePlan.getHealthInsurance().getId(),
+                coveragePlan.getHealthInsurance().getCompanyName(),
                 coveragePlan.getName(),
                 coveragePlan.getDescription(),
                 coveragePlan.getCoverageValuePercentage(),

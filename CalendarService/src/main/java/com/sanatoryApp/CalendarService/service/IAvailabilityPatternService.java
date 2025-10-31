@@ -3,11 +3,14 @@ package com.sanatoryApp.CalendarService.service;
 import com.sanatoryApp.CalendarService.dto.Request.AvailabilityPatternCreateDto;
 import com.sanatoryApp.CalendarService.dto.Request.AvailabilityPatternUpdateDto;
 import com.sanatoryApp.CalendarService.dto.Response.AvailabilityPatternResponseDto;
+import com.sanatoryApp.CalendarService.entity.AvailabilityPattern;
 
 import java.time.DayOfWeek;
 import java.util.List;
 
 public interface IAvailabilityPatternService {
+
+    AvailabilityPattern getAvailabilityPatternById(Long id);
 
     AvailabilityPatternResponseDto findAvailabilityPatternById(Long id);
 

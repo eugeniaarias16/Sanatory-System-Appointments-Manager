@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.GetMapping;
 
-@FeignClient(name = "health-insurance-service",url = "http://localhost:8083/api/v1")
+@FeignClient(name = "health-insurance-service",url = "${health-insurance-service.url}")
 public interface HealthInsuranceServiceApi {
 
     @GetMapping("/patientInsurance/credentialNumber/{credentialNumber}")

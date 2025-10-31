@@ -1,5 +1,7 @@
 package com.sanatoryApp.HealthInsuranceService.dto.Request;
 
+import com.sanatoryApp.HealthInsuranceService.entity.CoveragePlan;
+import com.sanatoryApp.HealthInsuranceService.entity.HealthInsurance;
 import com.sanatoryApp.HealthInsuranceService.entity.PatientInsurance;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -32,12 +34,12 @@ public class PatientInsuranceCreateDto {
     @Schema(description = "Coverage plan identifier")
     private Long coveragePlanId;
 
-    public PatientInsurance toEntity() {
+    public PatientInsurance toEntity(HealthInsurance healthInsurance, CoveragePlan coveragePlan) {
         PatientInsurance patientInsurance = new PatientInsurance();
         patientInsurance.setPatientDni(patientDni);
         patientInsurance.setCredentialNumber(credentialNumber);
-        patientInsurance.setHealthInsuranceId(healthInsuranceId);
-        patientInsurance.setCoveragePlanId(coveragePlanId);
+        patientInsurance.setHealthInsurance(healthInsurance);
+        patientInsurance.setCoveragePlan(coveragePlan);
         patientInsurance.setIsActive(true);
         return patientInsurance;
     }

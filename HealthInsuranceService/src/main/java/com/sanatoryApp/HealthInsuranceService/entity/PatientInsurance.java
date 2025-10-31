@@ -26,10 +26,14 @@ public class PatientInsurance {
     @Column(unique = true, nullable = false)
     private String credentialNumber;
 
-    @Column(nullable = false)
-    private Long healthInsuranceId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "health_insurance_id",nullable = false)
+    private HealthInsurance healthInsurance;
 
-    private Long coveragePlanId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coverage_plan_id",nullable = false)
+    private CoveragePlan coveragePlan;
 
     @Column(nullable = false, updatable = false)
     private LocalDate createdAt;

@@ -22,14 +22,19 @@ import java.util.List;
 public class HealthInsuranceService implements IHealthInsuranceService {
 
     private final IHealthInsuranceRepository healthInsuranceRepository;
-    private final ICoveragePlanService coveragePlanService;
-    private final IPatientInsuranceService patientInsuranceService;
+
+
+
+    @Override
+    public HealthInsurance getHealthInsuranceById(Long id) {
+        return healthInsuranceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Health Insurance not found with id: " + id));
+    }
 
     @Override
     public HealthInsuranceResponseDto findHealthInsuranceById(Long id) {
         log.debug("Attempting to find Health Insurance by id: {}", id);
-        HealthInsurance healthInsurance = healthInsuranceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Health Insurance not found with id: " + id));
+        HealthInsurance healthInsurance = getHealthInsuranceById(id);
 
         return HealthInsuranceResponseDto.fromEntity(healthInsurance);
     }
@@ -52,8 +57,7 @@ public class HealthInsuranceService implements IHealthInsuranceService {
     @Override
     public HealthInsuranceResponseDto updateHealthInsuranceById(Long id, HealthInsuranceUpdateDto dto) {
         log.debug("Attempting to update Health Insurance with id {} and values: {}", id, dto);
-        HealthInsurance existingHealthInsurance = healthInsuranceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Health Insurance not found with id: " + id));
+        HealthInsurance existingHealthInsurance = getHealthInsuranceById(id);
 
         updateCompanyName(existingHealthInsurance, dto.companyName());
         updateCompanyCode(existingHealthInsurance, dto.companyCode());
@@ -69,8 +73,7 @@ public class HealthInsuranceService implements IHealthInsuranceService {
     @Override
     public void deleteHealthInsuranceById(Long id) {
         log.debug("Attempting to delete Health Insurance with id {}", id);
-        HealthInsurance healthInsurance = healthInsuranceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Health Insurance not found with id: " + id));
+        HealthInsurance healthInsurance = getHealthInsuranceById(id);
         healthInsuranceRepository.delete(healthInsurance);
         log.info("Health Insurance with id {} successfully deleted", id);
     }
@@ -79,8 +82,7 @@ public class HealthInsuranceService implements IHealthInsuranceService {
     @Override
     public void softDeleteHealthInsuranceById(Long id) {
         log.debug("Attempting to soft delete Health Insurance with id {}", id);
-        HealthInsurance healthInsurance = healthInsuranceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Health Insurance not found with id: " + id));
+        HealthInsurance healthInsurance = getHealthInsuranceById(id);
         healthInsurance.setActive(false);
         healthInsuranceRepository.save(healthInsurance);
         log.info("Health Insurance with id {} successfully deactivated", id);
@@ -90,8 +92,7 @@ public class HealthInsuranceService implements IHealthInsuranceService {
     @Override
     public void activateHealthInsuranceById(Long id) {
         log.debug("Attempting to activate Health Insurance with id {}", id);
-        HealthInsurance healthInsurance = healthInsuranceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Health Insurance not found with id: " + id));
+        HealthInsurance healthInsurance = getHealthInsuranceById(id);
         healthInsurance.setActive(true);
         healthInsuranceRepository.save(healthInsurance);
         log.info("Health Insurance with id {} successfully activated", id);
@@ -143,17 +144,7 @@ public class HealthInsuranceService implements IHealthInsuranceService {
                 .toList();
     }
 
-    @Override
-    public List<CoveragePlanResponseDto> findCoveragePlans(Long insuranceId) {
-        log.debug("Attempting to find all active coverage plans for insurance id: {}", insuranceId);
-        return coveragePlanService.findByHealthInsuranceIdAndIsActiveTrue(insuranceId);
-    }
 
-    @Override
-    public List<PatientInsuranceResponseDto> findPatientsByInsuranceId(Long insuranceId) {
-        log.debug("Attempting to find all patients for insurance id: {}", insuranceId);
-        return patientInsuranceService.findPatientInsuranceByHealthInsurance(insuranceId);
-    }
 
     @Override
     public boolean existsByCompanyName(String companyName) {
@@ -179,20 +170,6 @@ public class HealthInsuranceService implements IHealthInsuranceService {
         return healthInsuranceRepository.existsByEmail(email);
     }
 
-    @Override
-    public boolean existsById(Long id) {
-        return healthInsuranceRepository.existsById(id);
-    }
-
-    @Override
-    public Integer countActivePatients(Long insuranceId) {
-        return patientInsuranceService.countActivePatientsByInsuranceId(insuranceId);
-    }
-
-    @Override
-    public Integer countActivePlans(Long insuranceId) {
-        return coveragePlanService.countActivePlanByHealthInsurance(insuranceId);
-    }
 
     // Private helper methods to reduce code duplication
     private void validateUniqueConstraints(String companyName, String email,

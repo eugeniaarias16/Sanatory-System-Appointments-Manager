@@ -1,6 +1,7 @@
 package com.sanatoryApp.HealthInsuranceService.dto.Request;
 
 import com.sanatoryApp.HealthInsuranceService.entity.CoveragePlan;
+import com.sanatoryApp.HealthInsuranceService.entity.HealthInsurance;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -32,9 +33,9 @@ public class CoveragePlanCreateDto {
     @Schema(description = "Value between 0.00 and 100.00", example = "75.00")
     private BigDecimal coverageValue;
 
-    public CoveragePlan toEntity() {
+    public CoveragePlan toEntity(HealthInsurance healthInsurance) {
         CoveragePlan coveragePlan = new CoveragePlan();
-        coveragePlan.setHealthInsuranceId(this.healthInsuranceId);
+        coveragePlan.setHealthInsurance(healthInsurance);
         coveragePlan.setName(this.name);
         coveragePlan.setDescription(this.description);
         coveragePlan.setCoverageValuePercentage(this.coverageValue);

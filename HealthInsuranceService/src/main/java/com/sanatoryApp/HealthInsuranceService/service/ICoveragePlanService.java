@@ -3,11 +3,13 @@ package com.sanatoryApp.HealthInsuranceService.service;
 import com.sanatoryApp.HealthInsuranceService.dto.Request.CoveragePlanCreateDto;
 import com.sanatoryApp.HealthInsuranceService.dto.Request.CoveragePlanUpdateDto;
 import com.sanatoryApp.HealthInsuranceService.dto.Response.CoveragePlanResponseDto;
+import com.sanatoryApp.HealthInsuranceService.entity.CoveragePlan;
 
 import java.util.List;
 
 public interface ICoveragePlanService {
 
+    CoveragePlan getCoveragePlanById(Long id);
     CoveragePlanResponseDto findCoveragePlanById(Long id);
 
     CoveragePlanResponseDto createCoveragePlan(CoveragePlanCreateDto dto);

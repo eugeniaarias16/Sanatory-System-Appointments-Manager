@@ -1,6 +1,7 @@
 package com.sanatoryApp.CalendarService.dto.Request;
 
 import com.sanatoryApp.CalendarService.entity.CalendarException;
+import com.sanatoryApp.CalendarService.entity.DoctorCalendar;
 import com.sanatoryApp.CalendarService.entity.ExceptionType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -31,9 +32,9 @@ public class CalendarExceptionCreateDto {
         @NotNull(message = "isGlobal flag is required")
         private boolean isGlobal;
 
-        public CalendarException toEntity() {
+        public CalendarException toEntity(DoctorCalendar doctorCalendar) {
                 CalendarException calendarException = new CalendarException();
-                calendarException.setDoctorCalendarId(doctorCalendarId);
+                calendarException.setDoctorCalendar(doctorCalendar);
                 calendarException.setDate(date);
                 calendarException.setStartTime(startTime);
                 calendarException.setEndTime(endTime);

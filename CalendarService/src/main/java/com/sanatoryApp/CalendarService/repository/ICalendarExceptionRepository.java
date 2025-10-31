@@ -4,11 +4,13 @@ import com.sanatoryApp.CalendarService.entity.CalendarException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface ICalendarExceptionRepository extends JpaRepository<CalendarException, Long> {
 
     List<CalendarException> findByDoctorCalendarId(Long doctorCalendarId);
@@ -19,8 +21,8 @@ public interface ICalendarExceptionRepository extends JpaRepository<CalendarExce
     Optional<CalendarException> findByIdAndActiveTrue(@Param("id") Long id);
 
     @Query("SELECT ce FROM CalendarException ce " +
-            "WHERE (ce.doctorCalendarId = :calendarId " +
-            "OR (ce.isGlobal = true AND ce.doctorCalendarId IN " +
+            "WHERE (ce.doctorCalendar.id = :calendarId " +
+            "OR (ce.isGlobal = true AND ce.doctorCalendar.id IN " +
             "(SELECT dc.id FROM DoctorCalendar dc WHERE dc.doctorId = :doctorId))) " +
             "AND ce.date BETWEEN :startDate AND :endDate " +
             "AND ce.isActive = true " +
@@ -31,8 +33,8 @@ public interface ICalendarExceptionRepository extends JpaRepository<CalendarExce
                                                                 @Param("endDate") LocalDate endDate);
 
     @Query("SELECT ce FROM CalendarException ce " +
-            "WHERE (ce.doctorCalendarId = :calendarId " +
-            "OR (ce.isGlobal = true AND ce.doctorCalendarId IN " +
+            "WHERE (ce.doctorCalendar.id = :calendarId " +
+            "OR (ce.isGlobal = true AND ce.doctorCalendar.id IN " +
             "(SELECT dc.id FROM DoctorCalendar dc WHERE dc.doctorId = :doctorId))) " +
             "AND ce.date = :date " +
             "AND ce.isActive = true")
@@ -42,7 +44,7 @@ public interface ICalendarExceptionRepository extends JpaRepository<CalendarExce
 
     @Query("SELECT ce FROM CalendarException ce " +
             "WHERE ce.isGlobal = true " +
-            "AND ce.doctorCalendarId IN " +
+            "AND ce.doctorCalendar.id IN " +
             "(SELECT dc.id FROM DoctorCalendar dc WHERE dc.doctorId = :doctorId) " +
             "AND ce.isActive = true " +
             "ORDER BY ce.date")
@@ -50,7 +52,7 @@ public interface ICalendarExceptionRepository extends JpaRepository<CalendarExce
 
     @Query("SELECT CASE WHEN COUNT(ce) > 0 THEN true ELSE false END " +
             "FROM CalendarException ce " +
-            "WHERE ce.doctorCalendarId = :calendarId " +
+            "WHERE ce.doctorCalendar.id = :calendarId " +
             "AND ce.date = :date " +
             "AND ce.isActive = true " +
             "AND ce.id != :excludeId")
@@ -59,7 +61,7 @@ public interface ICalendarExceptionRepository extends JpaRepository<CalendarExce
                                        @Param("excludeId") Long excludeId);
 
     @Query("SELECT ce FROM CalendarException ce " +
-            "WHERE ce.doctorCalendarId = :calendarId " +
+            "WHERE ce.doctorCalendar.id = :calendarId " +
             "AND ce.date >= :currentDate " +
             "AND ce.isActive = true " +
             "ORDER BY ce.date ASC")

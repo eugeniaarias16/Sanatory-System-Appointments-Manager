@@ -8,6 +8,7 @@ import java.time.LocalTime;
 public record AvailabilityPatternResponseDto(
         Long id,
         Long doctorCalendarId,
+        String doctorCalendarName,
         DayOfWeek dayOfWeek,
         LocalTime startTime,
         LocalTime endTime,
@@ -16,7 +17,8 @@ public record AvailabilityPatternResponseDto(
     public static AvailabilityPatternResponseDto fromEntity(AvailabilityPattern availabilityPattern) {
         return new AvailabilityPatternResponseDto(
                 availabilityPattern.getId(),
-                availabilityPattern.getDoctorCalendarId(),
+                availabilityPattern.getDoctorCalendar().getId(),
+                availabilityPattern.getDoctorCalendar().getName(),
                 availabilityPattern.getDayOfWeek(),
                 availabilityPattern.getStartTime(),
                 availabilityPattern.getEndTime(),

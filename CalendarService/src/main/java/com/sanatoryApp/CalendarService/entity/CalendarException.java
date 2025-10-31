@@ -22,8 +22,10 @@ public class CalendarException {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long doctorCalendarId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_calendar_id", nullable = false)
+    private DoctorCalendar doctorCalendar;
 
     @Column(nullable = false)
     @FutureOrPresent(message = "Date must be present or future")

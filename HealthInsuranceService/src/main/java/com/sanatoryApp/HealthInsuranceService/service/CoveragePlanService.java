@@ -4,11 +4,14 @@ import com.sanatoryApp.HealthInsuranceService.dto.Request.CoveragePlanCreateDto;
 import com.sanatoryApp.HealthInsuranceService.dto.Request.CoveragePlanUpdateDto;
 import com.sanatoryApp.HealthInsuranceService.dto.Response.CoveragePlanResponseDto;
 import com.sanatoryApp.HealthInsuranceService.entity.CoveragePlan;
+import com.sanatoryApp.HealthInsuranceService.entity.HealthInsurance;
 import com.sanatoryApp.HealthInsuranceService.exception.DuplicateResourceException;
 import com.sanatoryApp.HealthInsuranceService.exception.ResourceNotFound;
 import com.sanatoryApp.HealthInsuranceService.repository.ICoveragePlanRepository;
+import com.sanatoryApp.HealthInsuranceService.repository.IHealthInsuranceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,27 +19,31 @@ import java.util.List;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class CoveragePlanService implements ICoveragePlanService {
 
     private final ICoveragePlanRepository coveragePlanRepository;
     private final IHealthInsuranceService healthInsuranceService;
 
+
+    @Override
+    public CoveragePlan getCoveragePlanById(Long id) {
+         return coveragePlanRepository.findById(id)
+                 .orElseThrow(() -> new ResourceNotFound("Coverage Plan not found with id: " + id));
+    }
+
     @Override
     public CoveragePlanResponseDto findCoveragePlanById(Long id) {
         log.debug("Searching Coverage Plan by id {}", id);
-        CoveragePlan coveragePlan = coveragePlanRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Coverage Plan not found with id: " + id));
+        CoveragePlan coveragePlan = getCoveragePlanById(id);
         return CoveragePlanResponseDto.fromEntity(coveragePlan);
     }
 
     @Transactional
     @Override
     public CoveragePlanResponseDto createCoveragePlan(CoveragePlanCreateDto dto) {
-        if (!healthInsuranceService.existsById(dto.getHealthInsuranceId())) {
-            throw new ResourceNotFound("Health Insurance not found with id " + dto.getHealthInsuranceId());
-        }
+        HealthInsurance healthInsurance = healthInsuranceService.getHealthInsuranceById(dto.getHealthInsuranceId());
 
         if (existsByNameAndInsurance(dto.getName(), dto.getHealthInsuranceId(), null)) {
             throw new DuplicateResourceException(
@@ -46,7 +53,7 @@ public class CoveragePlanService implements ICoveragePlanService {
         }
 
         log.debug("Creating new Coverage Plan with values: {}", dto);
-        CoveragePlan coveragePlan = dto.toEntity();
+        CoveragePlan coveragePlan = dto.toEntity(healthInsurance);
         CoveragePlan saved = coveragePlanRepository.save(coveragePlan);
         log.info("Coverage Plan with id {} successfully created.", saved.getId());
         return CoveragePlanResponseDto.fromEntity(saved);
@@ -56,16 +63,15 @@ public class CoveragePlanService implements ICoveragePlanService {
     @Override
     public CoveragePlanResponseDto updateCoveragePlanById(Long id, CoveragePlanUpdateDto dto) {
         log.debug("Attempting to update Coverage Plan with id: {} with fields: {}", id, dto);
-        CoveragePlan existingCoveragePlan = coveragePlanRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Coverage Plan not found with id: " + id));
+        CoveragePlan existingCoveragePlan = getCoveragePlanById(id);
 
         if (dto.name() != null && !dto.name().isEmpty()) {
             String newName = dto.name();
             if (!existingCoveragePlan.getName().equalsIgnoreCase(newName)) {
-                if (existsByNameAndInsurance(newName, existingCoveragePlan.getHealthInsuranceId(), id)) {
+                if (existsByNameAndInsurance(newName, existingCoveragePlan.getHealthInsurance().getId(), id)) {
                     throw new DuplicateResourceException(
                             "Already exists a Coverage Plan with name " + newName +
-                                    " and insurance id " + existingCoveragePlan.getHealthInsuranceId()
+                                    " and insurance id " + existingCoveragePlan.getHealthInsurance().getId()
                     );
                 }
                 existingCoveragePlan.setName(newName);
@@ -90,8 +96,7 @@ public class CoveragePlanService implements ICoveragePlanService {
     @Override
     public void softDeleteCoveragePlanById(Long id) {
         log.debug("Attempting to soft delete Coverage Plan with id: {}", id);
-        CoveragePlan coveragePlan = coveragePlanRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Coverage Plan not found with id: " + id));
+        CoveragePlan coveragePlan = getCoveragePlanById(id);
         coveragePlan.setActive(false);
         coveragePlanRepository.save(coveragePlan);
         log.info("Coverage Plan with id {} successfully deactivated (soft deleted).", id);
@@ -101,15 +106,14 @@ public class CoveragePlanService implements ICoveragePlanService {
     @Override
     public void deleteCoveragePlanById(Long id) {
         log.debug("Attempting to delete Coverage Plan with id: {}", id);
-        CoveragePlan coveragePlan = coveragePlanRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFound("Coverage Plan not found with id: " + id));
+        CoveragePlan coveragePlan = getCoveragePlanById(id);
         coveragePlanRepository.delete(coveragePlan);
         log.info("Coverage Plan with id {} successfully deleted.", id);
     }
 
     @Override
     public List<CoveragePlanResponseDto> findByHealthInsuranceId(Long healthInsuranceId) {
-        List<CoveragePlan> coveragePlanList = coveragePlanRepository.findByHealthInsuranceId(healthInsuranceId);
+        List<CoveragePlan> coveragePlanList = coveragePlanRepository.findByHealthInsurance_Id(healthInsuranceId);
         if (coveragePlanList.isEmpty()) {
             log.info("No coverage plans found with Insurance id {}", healthInsuranceId);
         }
@@ -121,7 +125,7 @@ public class CoveragePlanService implements ICoveragePlanService {
     @Override
     public List<CoveragePlanResponseDto> findByHealthInsuranceIdAndIsActiveTrue(Long healthInsuranceId) {
         List<CoveragePlan> coveragePlanList =
-                coveragePlanRepository.findByHealthInsuranceIdAndIsActiveTrue(healthInsuranceId);
+                coveragePlanRepository.findByHealthInsurance_IdAndIsActiveTrue(healthInsuranceId);
         if (coveragePlanList.isEmpty()) {
             log.info("No active coverage plans found with Insurance id {}", healthInsuranceId);
         }

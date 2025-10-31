@@ -29,8 +29,8 @@ public record PatientInsuranceCreateResponseDto (
                 patientDto.lastName(),       // It comes from user-service.
                 patientDto.email(),          // It comes from user-service.
                 patientInsurance.getCredentialNumber(),
-                patientInsurance.getHealthInsuranceId(),
-                patientInsurance.getCoveragePlanId(),
+                patientInsurance.getHealthInsurance().getId(),
+                patientInsurance.getCoveragePlan().getId(),
                 patientInsurance.getCreatedAt(),
                 patientInsurance.getIsActive()
         );
