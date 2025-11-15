@@ -5,13 +5,14 @@ import com.sanatoryApp.AppointmentService.dto.Request.externalService.PatientIns
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name = "health-insurance-service",url = "${health-insurance-service.url}")
 public interface HealthInsuranceServiceApi {
 
     @GetMapping("/patientInsurance/credentialNumber/{credentialNumber}")
-    PatientInsuranceDto getPatientInsuranceByCredentialNumber(String credentialNumber);
+    PatientInsuranceDto getPatientInsuranceByCredentialNumber(@PathVariable String credentialNumber);
 
     @GetMapping("/coveragePlan/{id}")
-    CoveragePlanDto getCoveragePlanById(@Param("id")Long id);
+    CoveragePlanDto getCoveragePlanById(@PathVariable @Param("id")Long id);
 }

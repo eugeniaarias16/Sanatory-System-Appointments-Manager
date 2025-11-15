@@ -7,6 +7,7 @@ import com.sanatoryApp.AppointmentService.dto.Response.AppointmentResponseDto;
 import com.sanatoryApp.AppointmentService.entity.Appointment;
 import com.sanatoryApp.AppointmentService.entity.AppointmentStatus;
 import com.sanatoryApp.AppointmentService.entity.AppointmentType;
+import com.sanatoryApp.AppointmentService.exception.BadRequest;
 import com.sanatoryApp.AppointmentService.exception.ResourceNotFound;
 import com.sanatoryApp.AppointmentService.repository.*;
 import feign.FeignException;
@@ -100,6 +101,9 @@ public class AppointmentService implements IAppointmentService {
         AppointmentType appointmentType = appointmentTypeRepository.findById(dto.getAppointmentTypeId())
                 .orElseThrow(() -> new ResourceNotFound("Appointment Type not found with id: " + dto.getAppointmentTypeId()));
 
+        if(existsByPatientIdAndDoctorIdAndDate(patientDto.id(),doctorDto.id(),dto.getDate())){
+            throw new BadRequest("Appointment already exists with doctor"+doctorDto.firstName()+" "+doctorDto.lastName()+" on day "+dto.getDate());
+        }
         Appointment appointment = new Appointment();
         appointment.setDoctorId(doctorDto.id());
         appointment.setDoctorCalendarId(doctorCalendarDto.id());
@@ -221,6 +225,11 @@ public class AppointmentService implements IAppointmentService {
         Appointment appointment = appointmentRepository.findAppointmentByPatientIdAndDoctorIdAndDate(patientId, doctorId, date)
                 .orElseThrow(() -> new ResourceNotFound("Appointment not found with patient id: " + patientId + ", doctor id: " + doctorId + " and date: " + date));
         return AppointmentResponseDto.fromEntity(appointment);
+    }
+
+    @Override
+    public boolean existsByPatientIdAndDoctorIdAndDate(Long patientId, Long doctorId, LocalDateTime date) {
+        return appointmentRepository.existsByPatientIdAndDoctorIdAndDate(patientId, doctorId, date);
     }
 
     private BigDecimal calculateAmountToPay(BigDecimal cost, BigDecimal coverPercentage) {

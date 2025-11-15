@@ -7,8 +7,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public record CalendarExceptionUpdateDto(
-        @NotNull Long doctorCalendarId,
-        @NotNull LocalDate date,
+        Long doctorCalendarId,
+        LocalDate date,
         LocalTime startTime,
         LocalTime endTime,
         ExceptionType exceptionType,

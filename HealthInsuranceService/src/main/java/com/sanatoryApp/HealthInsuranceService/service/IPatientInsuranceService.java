@@ -6,6 +6,7 @@ import com.sanatoryApp.HealthInsuranceService.dto.Response.PatientInsuranceRespo
 import com.sanatoryApp.HealthInsuranceService.entity.PatientInsurance;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface IPatientInsuranceService {
@@ -28,4 +29,6 @@ public interface IPatientInsuranceService {
     List<PatientInsuranceResponseDto> findPatientInsuranceByCreatedAfterDate(LocalDate date);
 
     Boolean existsByCredentialNumber(String credentialNumber);
+
+
 }

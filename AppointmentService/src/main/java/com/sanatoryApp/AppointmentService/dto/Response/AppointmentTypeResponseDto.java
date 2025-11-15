@@ -6,6 +6,7 @@ import com.sanatoryApp.AppointmentService.entity.AppointmentType;
 import java.math.BigDecimal;
 
 public record AppointmentTypeResponseDto(
+        Long id,
         String name,
         String description,
         int durationMin,
@@ -15,6 +16,7 @@ public record AppointmentTypeResponseDto(
 ) {
     public static AppointmentTypeResponseDto fromEntity(AppointmentType appointmentType){
         return new AppointmentTypeResponseDto(
+                appointmentType.getId(),
                 appointmentType.getName(),
                 appointmentType.getDescription(),
                 appointmentType.getDurationMin(),

@@ -18,10 +18,9 @@ public class CalendarExceptionCreateDto {
         @NotNull(message = "Date is required")
         private LocalDate date;
 
-        @NotNull(message = "Start time is required")
         private LocalTime startTime;
 
-        @NotNull(message = "End time is required")
+
         private LocalTime endTime;
 
         @NotNull(message = "Exception type is required")

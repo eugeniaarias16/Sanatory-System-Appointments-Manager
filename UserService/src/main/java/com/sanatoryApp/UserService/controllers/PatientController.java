@@ -4,6 +4,8 @@ import com.sanatoryApp.UserService.dto.Request.PatientCreateDto;
 import com.sanatoryApp.UserService.dto.Request.PatientUpdateDto;
 import com.sanatoryApp.UserService.dto.Response.PatientResponseDto;
 import com.sanatoryApp.UserService.service.IPatientService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,29 +17,35 @@ import java.util.List;
 @RestController
 @RequestMapping("/patient")
 @RequiredArgsConstructor
+@Tag(name = "Patient Management",description ="API for managing Patient's information." )
+
 public class PatientController {
 
     private final IPatientService patientService;
 
     /* =================== GET ENDPOINTS =================== */
+    @Operation(summary = "Get all Patients")
     @GetMapping
     public ResponseEntity<List<PatientResponseDto>>findAllPatients(){
         List<PatientResponseDto>list=patientService.findAll();
         return ResponseEntity.ok(list);
     }
 
+    @Operation(summary = "Get Patient by id")
     @GetMapping("/id/{id}")
     public ResponseEntity<PatientResponseDto>findPatientById(@PathVariable Long id){
         PatientResponseDto responseDto=patientService.findPatientById(id);
         return ResponseEntity.ok(responseDto);
     }
 
+    @Operation(summary = "Get Patient by dni")
     @GetMapping("/dni/{dni}")
     public ResponseEntity<PatientResponseDto>findPatientByDni(@PathVariable String dni){
         PatientResponseDto responseDto=patientService.findPatientByDni(dni);
         return ResponseEntity.ok(responseDto);
     }
 
+    @Operation(summary = "Get Patient by email")
     @GetMapping("/email/{email}")
     public ResponseEntity<PatientResponseDto>findPatientByEmail(@PathVariable String email){
         PatientResponseDto responseDto=patientService.findPatientByEmail(email);
@@ -45,6 +53,7 @@ public class PatientController {
     }
 
     /* =================== POST ENDPOINTS =================== */
+    @Operation(summary = "Create a new Patient")
     @PostMapping("/create")
     public ResponseEntity<PatientResponseDto>createPatient(@Valid @RequestBody PatientCreateDto dto){
         PatientResponseDto responseDto=patientService.createPatient(dto);
@@ -52,6 +61,7 @@ public class PatientController {
     }
 
     /* =================== PUT ENDPOINTS =================== */
+    @Operation(summary = "Update Patient by id")
     @PutMapping("/update/id/{id}")
     public ResponseEntity<PatientResponseDto>updatePatientById(@PathVariable Long id,
                                                                @Valid @RequestBody PatientUpdateDto dto){
@@ -60,6 +70,7 @@ public class PatientController {
     }
 
     @PutMapping("/update/dni/{dni}")
+    @Operation(summary = "Update Patient by dni")
     public ResponseEntity<PatientResponseDto>updatePatientByDni(@PathVariable String dni,
                                                                 @Valid @RequestBody PatientUpdateDto dto){
         PatientResponseDto responseDto=patientService.updatePatientByDni(dni,dto);
@@ -67,12 +78,14 @@ public class PatientController {
     }
 
     /* =================== DELETE ENDPOINTS =================== */
+    @Operation(summary = "Delete Patient by id")
     @DeleteMapping("/delete/id/{id}")
     public ResponseEntity<Void>deletePatientById(@PathVariable Long id){
         patientService.deletePatientById(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Delete Patient by dni")
     @DeleteMapping("/delete/dni/{dni}")
     public ResponseEntity<Void>deletePatientByDni(@PathVariable String dni){
         patientService.deletePatientByDni(dni);

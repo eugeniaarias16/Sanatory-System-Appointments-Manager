@@ -30,35 +30,35 @@ public class HealthInsuranceController {
     private final ICoveragePlanService coveragePlanService;
     private  final IPatientInsuranceService patientInsuranceService;
 
+    @Operation(summary = "Get health insurance by ID")
     @GetMapping("/{id}")
-    @Operation(summary = "Find health insurance by ID")
     public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceById(@PathVariable Long id) {
         return ResponseEntity.ok(healthInsuranceService.findHealthInsuranceById(id));
     }
 
     @GetMapping("/company-name/{companyName}")
-    @Operation(summary = "Find health insurance by company name")
+    @Operation(summary = "Get health insurance by company name")
     public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByCompanyName(
             @PathVariable String companyName) {
         return ResponseEntity.ok(healthInsuranceService.findHealthInsuranceByCompanyName(companyName));
     }
 
     @GetMapping("/company-code/{companyCode}")
-    @Operation(summary = "Find health insurance by company code")
+    @Operation(summary = "Get health insurance by company code")
     public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByCompanyCode(
             @PathVariable Long companyCode) {
         return ResponseEntity.ok(healthInsuranceService.findHealthInsuranceByCompanyCode(companyCode));
     }
 
     @GetMapping("/phone/{phoneNumber}")
-    @Operation(summary = "Find health insurance by phone number")
+    @Operation(summary = "Get health insurance by phone number")
     public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByPhoneNumber(
             @PathVariable String phoneNumber) {
         return ResponseEntity.ok(healthInsuranceService.findHealthInsuranceByPhoneNumber(phoneNumber));
     }
 
     @GetMapping("/email/{email}")
-    @Operation(summary = "Find health insurance by email")
+    @Operation(summary = "Get health insurance by email")
     public ResponseEntity<HealthInsuranceResponseDto> findHealthInsuranceByEmail(@PathVariable String email) {
         return ResponseEntity.ok(healthInsuranceService.findHealthInsuranceByEmail(email));
     }
@@ -71,14 +71,14 @@ public class HealthInsuranceController {
     }
 
     @GetMapping("/{insuranceId}/coverage-plans")
-    @Operation(summary = "Find all coverage plans for a health insurance")
+    @Operation(summary = "Get all coverage plans for a health insurance")
     public ResponseEntity<List<CoveragePlanResponseDto>> findCoveragePlans(@PathVariable Long insuranceId) {
        List<CoveragePlanResponseDto>plans= coveragePlanService.findByHealthInsuranceIdAndIsActiveTrue(insuranceId);
        return ResponseEntity.ok(plans);
     }
 
     @GetMapping("/{insuranceId}/patients")
-    @Operation(summary = "Find all patients for a health insurance")
+    @Operation(summary = "Get all patients for a health insurance")
     public ResponseEntity<List<PatientInsuranceResponseDto>> findPatientsByInsuranceId(
             @PathVariable Long insuranceId) {
         return ResponseEntity.ok(patientInsuranceService.findPatientInsuranceByHealthInsurance(insuranceId));

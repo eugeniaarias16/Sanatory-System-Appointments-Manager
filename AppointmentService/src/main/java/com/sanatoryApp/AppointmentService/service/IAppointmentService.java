@@ -3,13 +3,10 @@ package com.sanatoryApp.AppointmentService.service;
 import com.sanatoryApp.AppointmentService.dto.Request.AppointmentCreateDto;
 import com.sanatoryApp.AppointmentService.dto.Response.AppointmentCreateResponseDto;
 import com.sanatoryApp.AppointmentService.dto.Response.AppointmentResponseDto;
-import com.sanatoryApp.AppointmentService.entity.Appointment;
-import org.springframework.data.repository.query.Param;
 
 import javax.naming.ServiceUnavailableException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 public interface IAppointmentService {
@@ -49,6 +46,11 @@ public interface IAppointmentService {
 
     AppointmentResponseDto findAppointmentByPatientIdAndDoctorIdAndDate(Long patientId, Long doctorId, LocalDate date);
 
+    boolean existsByPatientIdAndDoctorIdAndDate(
+            Long patientId,
+            Long doctorId,
+            LocalDateTime date
+    );
 
 }
 
