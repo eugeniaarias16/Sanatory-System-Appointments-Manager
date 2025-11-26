@@ -9,6 +9,8 @@
         <option value="$PROJECT_DIR$/AppointmentService/pom.xml" />
         <option value="$PROJECT_DIR$/HealthInsuranceService/pom.xml" />
         <option value="$PROJECT_DIR$/eureka-server/pom.xml" />
+        <option value="$PROJECT_DIR$/Gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/api-gate-way/pom.xml" />
       </list>
     </option>
   </component>

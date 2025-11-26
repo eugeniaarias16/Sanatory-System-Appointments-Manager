@@ -27,6 +27,9 @@ public class DoctorCreateDto {
     @NotBlank(message = "Email is mandatory")
     private String email;
 
+    @NotBlank(message = "Dni is mandatory")
+    private String dni;
+
     @NotBlank
     @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid international phone format")
     @Schema(description = "Phone Number in international format ",example = "+5491112345678")
@@ -37,6 +40,7 @@ public class DoctorCreateDto {
         doctor.setFirstName(firstName);
         doctor.setLastName(lastName);
         doctor.setEmail(email);
+        doctor.setDni(dni);
         doctor.setPhoneNumber(phoneNumber);
         return doctor;
     }

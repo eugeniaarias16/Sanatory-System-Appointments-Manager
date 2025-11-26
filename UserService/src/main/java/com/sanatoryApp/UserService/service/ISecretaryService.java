@@ -3,6 +3,7 @@ package com.sanatoryApp.UserService.service;
 import com.sanatoryApp.UserService.dto.Request.SecretaryCreateDto;
 import com.sanatoryApp.UserService.dto.Request.SecretaryUpdateDto;
 import com.sanatoryApp.UserService.dto.Response.SecretaryResponseDto;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -21,4 +22,6 @@ public interface ISecretaryService  {
     SecretaryResponseDto findSecretaryByDni(String dni);
     boolean existsByEmail(String email);
     boolean existsByDni(String dni);
+    void disableSecretaryByDni(String dni);
+    void enableSecretaryByDni(String dni);
 }

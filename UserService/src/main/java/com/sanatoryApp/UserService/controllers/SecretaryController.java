@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/secretary")
 @Tag(name = "Secretary Management",description ="API for managing Secretary's information." )
-
+@PreAuthorize("hasRole('SECRETARY')")
 public class SecretaryController {
 
     private final ISecretaryService secretaryService;
@@ -66,7 +67,7 @@ public class SecretaryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    /* =================== PUT ENDPOINTS =================== */
+    /* =================== PUT/PATCH ENDPOINTS =================== */
 
     @Operation(summary ="Update Secretary by id" ,description ="Update Secretary's data by id" )
     @PutMapping("/update/id/{id}")
@@ -82,6 +83,21 @@ public class SecretaryController {
                                                                     @Valid @RequestBody SecretaryUpdateDto dto){
         SecretaryResponseDto responseDto=secretaryService.updateSecretaryByDni(dni,dto);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @Operation(summary ="Disable Secretary by dni" ,description ="Disable Secretary's data by dni" )
+    @PatchMapping("/disable/{dni}")
+    public ResponseEntity<String>disableSecretaryByDni(@PathVariable("dni")String dni){
+        secretaryService.disableSecretaryByDni(dni);
+        return ResponseEntity.ok("Secretary with dni "+dni+" successfully disabled.");
+
+    }
+    @Operation(summary ="Enable Secretary by dni" ,description ="Enable Secretary's data by dni" )
+    @PatchMapping("/enable/{dni}")
+    public ResponseEntity<String>enabledSecretaryByDni(@PathVariable("dni")String dni){
+        secretaryService.enableSecretaryByDni(dni);
+        return ResponseEntity.ok("Secretary with dni "+dni+" successfully enabled.");
+
     }
 
     /* =================== DELETE ENDPOINTS =================== */

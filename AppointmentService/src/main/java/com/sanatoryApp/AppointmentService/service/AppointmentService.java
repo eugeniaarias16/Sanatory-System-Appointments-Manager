@@ -11,12 +11,13 @@ import com.sanatoryApp.AppointmentService.exception.BadRequest;
 import com.sanatoryApp.AppointmentService.exception.ResourceNotFound;
 import com.sanatoryApp.AppointmentService.repository.*;
 import feign.FeignException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.naming.ServiceUnavailableException;
+import com.sanatoryApp.AppointmentService.exception.ServiceUnavailableException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -46,57 +47,112 @@ public class AppointmentService implements IAppointmentService {
         return AppointmentResponseDto.fromEntity(appointment);
     }
 
+    /* METHODS CALLING EXTERNAL SERVICES */
+
+    //METHODS CALLING USER-SERVICE
+
+    //Doctor Information
+    @CircuitBreaker(name = "user-service",fallbackMethod = "getDoctorByIdFallback")
+    private DoctorDto getDoctorById(Long id) {
+        log.debug("Calling User Service to get doctor with id: {}", id);
+        try {
+            return userServiceApi.getDoctorById(id);
+        } catch (FeignException.NotFound e) {
+            log.error("Doctor with id {} not found in User Service", id);
+            throw new ResourceNotFound("Doctor with id: " + id + " not found.");
+        }
+    }
+
+    private DoctorDto getDoctorByIdFallback(Long id, Exception e) throws ServiceUnavailableException {
+        log.error("Circuit Breaker activated for getDoctorById. Doctor id: {}, Error: {}", id, e.getMessage());
+       throw new ServiceUnavailableException("User Service is currently unavailable. Please try again later.");
+    }
+
+
+    //Patient information
+    @CircuitBreaker(name = "user-service",fallbackMethod = "getPatientByDniFallback")
+    private PatientDto getPatientByDni(String dni){
+        log.debug("Calling User Service to get patient with dni: {}", dni);
+        try {
+            return userServiceApi.getPatientByDni(dni);
+        } catch (FeignException.NotFound e) {
+            log.error("Patient with dni {} not found in User Service", dni);
+            throw new ResourceNotFound("Patient with dni: " + dni + " not found.");
+        }
+    }
+    private PatientDto getPatientByDniFallback(String dni,Exception e) throws ServiceUnavailableException {
+        log.error("Circuit Breaker activated for getPatientByDni. Patient dni: {}, Error: {}", dni, e.getMessage());
+        throw new ServiceUnavailableException("User Service is currently unavailable. Please try again later.");
+    }
+
+
+    //METHODS CALLING HEALTH-INSURANCE-SERVICE
+    //Patient Insurance Information
+    @CircuitBreaker(name = "health-insurance-service",fallbackMethod = "getPatientInsuranceByCredentialNumberFallback")
+    private PatientInsuranceDto getPatientInsuranceByCredentialNumber(String credentialNum){
+        log.debug("Calling Health Insurance Service to get patient insurance with credential number: {}", credentialNum);
+        try {
+            return healthInsuranceServiceApi.getPatientInsuranceByCredentialNumber(credentialNum);
+        } catch (FeignException.NotFound e) {
+            log.error("Patient Insurance with credential number {} not found in Health Insurance Service", credentialNum);
+            throw new ResourceNotFound("Patient Insurance with credential number: " + credentialNum + " not found.");
+        }
+    }
+
+    private PatientInsuranceDto getPatientInsuranceByCredentialNumberFallback(String credentialNum, Exception e) throws ServiceUnavailableException {
+        log.error("Circuit Breaker activated for getPatientInsuranceByCredentialNumber. Patient Insurance with credential number: {}, Error: {}", credentialNum, e.getMessage());
+        throw new ServiceUnavailableException("Health Insurance Service is currently unavailable. Please try again later.");
+    }
+
+    //Coverage Plan Information
+    @CircuitBreaker(name = "health-insurance-service",fallbackMethod = "getCoveragePlanByIdFallback")
+    private CoveragePlanDto getCoveragePlanById(Long coveragePlanId){
+        log.debug("Calling Health Insurance Service to get coverage plan with id: {}", coveragePlanId);
+        try {
+            return healthInsuranceServiceApi.getCoveragePlanById(coveragePlanId);
+        } catch (FeignException.NotFound e) {
+            log.error("Coverage Plan with id {} not found in Health Insurance Service",coveragePlanId);
+            throw new ResourceNotFound("Coverage Plan with id: " +coveragePlanId + " not found.");
+        }
+    }
+
+    private CoveragePlanDto getCoveragePlanByIdFallback(Long coveragePlanId,Exception e) throws ServiceUnavailableException {
+        log.error("Circuit Breaker activated for getCoveragePlanById. Coverage Plan with id: {}, Error: {}", coveragePlanId, e.getMessage());
+        throw new ServiceUnavailableException("Health Insurance Service is currently unavailable. Please try again later.");
+    }
+
+    //METHODS CALLING CALENDAR-SERVICE
+    //Doctor Calendar Information
+    @CircuitBreaker(name = "calendar-service",fallbackMethod = "getDoctorCalendarByIdFallback")
+    private DoctorCalendarDto getDoctorCalendarById(Long calendarId){
+        log.debug("Calling Calendar Service to get doctor calendar with id: {}", calendarId);
+        try {
+            return calendarServiceApi.getDoctorCalendarById(calendarId);
+        } catch (FeignException.NotFound e) {
+            log.error("Doctor Calendar with id {} not found in Calendar Service", calendarId);
+            throw new ResourceNotFound("Doctor Calendar with id: " + calendarId + " not found.");
+        }
+    }
+
+    private DoctorCalendarDto getDoctorCalendarByIdFallback(Long calendarId,Exception e) throws ServiceUnavailableException {
+        log.error("Circuit Breaker activated for getDoctorCalendarById. Doctor Calendar with id: {}, Error: {}", calendarId, e.getMessage());
+        throw new ServiceUnavailableException("Calendar Service is currently unavailable. Please try again later.");
+    }
+
+
+
     @Override
     @Transactional
     public AppointmentCreateResponseDto createAppointment(AppointmentCreateDto dto) throws ServiceUnavailableException {
 
         log.debug("Attempting to create a new Appointment");
 
-        DoctorDto doctorDto;
-        try {
-            doctorDto = userServiceApi.getDoctorById(dto.getDoctorId());
-        } catch (FeignException.NotFound e) {
-            throw new ResourceNotFound("Doctor with id: " + dto.getDoctorId() + " not found.");
-        } catch (FeignException.ServiceUnavailable e) {
-            throw new ServiceUnavailableException("User Service is down");
-        } catch (FeignException e) {
-            throw new RuntimeException("Error calling User Service: " + e.getMessage());
-        }
+        DoctorDto doctorDto = getDoctorById(dto.getDoctorId());
+        PatientDto patientDto = getPatientByDni(dto.getPatientDni());
+        PatientInsuranceDto patientInsuranceDto = getPatientInsuranceByCredentialNumber(dto.getCredentialNumber());
+        CoveragePlanDto coveragePlanDto = getCoveragePlanById(patientInsuranceDto.coveragePlanId());
+        DoctorCalendarDto doctorCalendarDto = getDoctorCalendarById(dto.getDoctorCalendarId());
 
-        PatientDto patientDto;
-        try {
-            patientDto = userServiceApi.getPatientByDni(dto.getPatientDni());
-        } catch (FeignException.NotFound e) {
-            throw new ResourceNotFound("Patient with dni: " + dto.getPatientDni() + " not found.");
-        } catch (FeignException.ServiceUnavailable e) {
-            throw new ServiceUnavailableException("User Service is down");
-        } catch (FeignException e) {
-            throw new RuntimeException("Error calling User Service: " + e.getMessage());
-        }
-
-        PatientInsuranceDto patientInsuranceDto;
-        try {
-            patientInsuranceDto = healthInsuranceServiceApi.getPatientInsuranceByCredentialNumber(dto.getCredentialNumber());
-        } catch (FeignException.NotFound e) {
-            throw new ResourceNotFound("Patient Insurance with credential number : " + dto.getCredentialNumber() + " not found.");
-        } catch (FeignException.ServiceUnavailable e) {
-            throw new ServiceUnavailableException("Health Insurance Service is down");
-        } catch (FeignException e) {
-            throw new RuntimeException("Error calling Health Insurance Service: " + e.getMessage());
-        }
-
-        CoveragePlanDto coveragePlanDto = healthInsuranceServiceApi.getCoveragePlanById(patientInsuranceDto.coveragePlanId());
-
-        DoctorCalendarDto doctorCalendarDto;
-        try {
-            doctorCalendarDto = calendarServiceApi.getDoctorCalendarById(dto.getDoctorCalendarId());
-        } catch (FeignException.NotFound e) {
-            throw new ResourceNotFound("Doctor Calendar with id: " + dto.getDoctorCalendarId() + " not found.");
-        } catch (FeignException.ServiceUnavailable e) {
-            throw new ServiceUnavailableException("Calendar Service is down");
-        } catch (FeignException e) {
-            throw new RuntimeException("Error calling Calendar Service: " + e.getMessage());
-        }
 
         AppointmentType appointmentType = appointmentTypeRepository.findById(dto.getAppointmentTypeId())
                 .orElseThrow(() -> new ResourceNotFound("Appointment Type not found with id: " + dto.getAppointmentTypeId()));
@@ -116,7 +172,8 @@ public class AppointmentService implements IAppointmentService {
         BigDecimal amountToPay = calculateAmountToPay(appointment.getConsultationCost(), appointment.getCoveragePercentage());
         appointment.setAmountToPay(amountToPay);
 
-        appointment.setDate(dto.getDate());
+        LocalDateTime date = dto.getDate().atStartOfDay();
+        appointment.setDate(date);
 
         if (dto.getNotes() != null && !dto.getNotes().isEmpty()) {
             appointment.setNotes(dto.getNotes());
@@ -149,8 +206,11 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public List<AppointmentResponseDto> findByPatientIdAndDate(Long patientId, LocalDateTime date) {
-        List<Appointment> appointmentList = appointmentRepository.findByPatientIdAndDate(patientId, date);
+    public List<AppointmentResponseDto> findByPatientIdAndDate(Long patientId, LocalDate date) {
+
+        LocalDateTime start = date.atStartOfDay();
+
+        List<Appointment> appointmentList = appointmentRepository.findByPatientIdAndDate(patientId, start);
         return appointmentList.stream()
                 .map(AppointmentResponseDto::fromEntity)
                 .toList();
@@ -165,6 +225,15 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
+    public List<AppointmentResponseDto> findByPatientDni(String dni) {
+        PatientDto patientDto=getPatientByDni(dni);
+        List<Appointment>appointmentList=appointmentRepository.findByPatientId(patientDto.id());
+        return appointmentList.stream()
+                .map(AppointmentResponseDto::fromEntity)
+                .toList();
+    }
+
+    @Override
     public List<AppointmentResponseDto> findByPatientInsuranceId(Long insuranceId) {
         List<Appointment> appointmentList = appointmentRepository.findByPatientInsuranceId(insuranceId);
         return appointmentList.stream()
@@ -173,19 +242,57 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public List<AppointmentResponseDto> findByPatientIdAndDateBetween(Long patientId, LocalDateTime startDate, LocalDateTime endDate) {
-        List<Appointment> appointmentList = appointmentRepository.findByPatientIdAndDateBetween(patientId, startDate, endDate);
+    public List<AppointmentResponseDto> findByPatientIdAndDateBetween(Long patientId, LocalDate startDate, LocalDate endDate) {
+
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.plusDays(1).atStartOfDay();
+
+        List<Appointment> appointmentList = appointmentRepository.findByPatientIdAndDateBetween(patientId, start, end);
         return appointmentList.stream()
                 .map(AppointmentResponseDto::fromEntity)
                 .toList();
     }
 
     @Override
-    public List<AppointmentResponseDto> findUpcomingAppointmentsByPatientId(Long patientId, LocalDateTime now) {
-        List<Appointment> appointmentList = appointmentRepository.findUpcomingAppointmentsByPatientId(patientId, now);
+    public List<AppointmentResponseDto> findByPatientDniAndDateBetween(String patientDni, LocalDate startDate, LocalDate endDate) {
+
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.plusDays(1).atStartOfDay();
+
+        PatientDto patientDto=getPatientByDni(patientDni);
+        return findByPatientIdAndDateBetween(patientDto.id(), startDate,endDate);
+    }
+
+    @Override
+    public List<AppointmentResponseDto> findUpcomingAppointmentsByPatientId(Long patientId, LocalDate date) {
+        LocalDateTime start = date.atStartOfDay();
+        List<Appointment> appointmentList = appointmentRepository.findUpcomingAppointmentsByPatientId(patientId, start);
         return appointmentList.stream()
                 .map(AppointmentResponseDto::fromEntity)
                 .toList();
+    }
+
+    @Override
+    public List<AppointmentResponseDto> findUpcomingAppointmentsByPatientId(Long patientId) {
+
+        LocalDateTime date=LocalDateTime.now();
+        List<Appointment> appointmentList = appointmentRepository.findUpcomingAppointmentsByPatientId(patientId,date);
+        return appointmentList.stream()
+                .map(AppointmentResponseDto::fromEntity)
+                .toList();
+    }
+
+    @Override
+    public List<AppointmentResponseDto> findUpcomingAppointmentsByPatientDni(String patientDni, LocalDate date) {
+
+        PatientDto patientDto=getPatientByDni(patientDni);
+        return findUpcomingAppointmentsByPatientId(patientDto.id(), date);
+    }
+
+    @Override
+    public List<AppointmentResponseDto> findUpcomingAppointmentsByPatientDni(String patientDni) {
+        PatientDto patientDto=getPatientByDni(patientDni);
+        return findUpcomingAppointmentsByPatientId(patientDto.id(), LocalDate.now());
     }
 
     @Override
@@ -197,8 +304,11 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public List<AppointmentResponseDto> findByDoctorIdAndDateBetween(Long doctorId, LocalDateTime startDate, LocalDateTime endDate) {
-        List<Appointment> appointmentList = appointmentRepository.findByDoctorIdAndDateBetween(doctorId, startDate, endDate);
+    public List<AppointmentResponseDto> findByDoctorIdAndDateBetween(Long doctorId, LocalDate startDate, LocalDate endDate) {
+
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.plusDays(1).atStartOfDay();
+        List<Appointment> appointmentList = appointmentRepository.findByDoctorIdAndDateBetween(doctorId, start, end);
         return appointmentList.stream()
                 .map(AppointmentResponseDto::fromEntity)
                 .toList();
@@ -213,7 +323,8 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public List<AppointmentResponseDto> findTodayAppointmentsByDoctorId(Long doctorId, LocalDate today) {
+    public List<AppointmentResponseDto> findTodayAppointmentsByDoctorId(Long doctorId) {
+        LocalDate today=LocalDate.now();
         List<Appointment> appointmentList = appointmentRepository.findTodayAppointmentsByDoctorId(doctorId, today);
         return appointmentList.stream()
                 .map(AppointmentResponseDto::fromEntity)
@@ -228,8 +339,10 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
-    public boolean existsByPatientIdAndDoctorIdAndDate(Long patientId, Long doctorId, LocalDateTime date) {
-        return appointmentRepository.existsByPatientIdAndDoctorIdAndDate(patientId, doctorId, date);
+    public boolean existsByPatientIdAndDoctorIdAndDate(Long patientId, Long doctorId, LocalDate date) {
+        LocalDateTime start = date.atStartOfDay();
+
+        return appointmentRepository.existsByPatientIdAndDoctorIdAndDate(patientId, doctorId,start);
     }
 
     private BigDecimal calculateAmountToPay(BigDecimal cost, BigDecimal coverPercentage) {

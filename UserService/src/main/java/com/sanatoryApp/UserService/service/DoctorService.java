@@ -9,6 +9,7 @@ import com.sanatoryApp.UserService.exception.ResourceNotFound;
 import com.sanatoryApp.UserService.repository.IDoctorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ import java.util.Map;
 public class DoctorService implements IDoctorService{
 
     private final IDoctorRepository doctorRepository;
+    private  final PasswordEncoder passwordEncoder;
 
     @Override
     public List<DoctorResponseDto> findAll() {
@@ -113,11 +115,27 @@ public class DoctorService implements IDoctorService{
             throw new DuplicateResourceException("Doctor already exists with phone number: "+dto.getPhoneNumber());
         }
 
+        if(existsByDni(dto.getDni())){
+            throw new DuplicateResourceException("Doctor already exists with dni: "+dto.getDni());
+        }
+
+        String defaultPassword= passwordEncoder.encode(dto.getDni());
+
+
         Doctor doctor=dto.toEntity();
+        doctor.setPassword(defaultPassword);
         Doctor saved=doctorRepository.save(doctor);
         log.info("Doctor with id {} successfully created.",saved.getId());
         return DoctorResponseDto.fromEntity(saved);
     }
+
+    @Override
+    public DoctorResponseDto findDoctorByDni(String dni) {
+        Doctor doctor=doctorRepository.findDoctorByDni(dni)
+                .orElseThrow(()->new ResourceNotFound("Doctor not found with dni: "+dni));
+        return DoctorResponseDto.fromEntity(doctor);
+    }
+
     @Transactional
     @Override
     public void deleteDoctorById(Long id) {
@@ -126,6 +144,13 @@ public class DoctorService implements IDoctorService{
                 .orElseThrow(()->new ResourceNotFound("Doctor not found with id: "+id));
         doctorRepository.delete(existingDoctor);
         log.info("Doctor with id {} successfully deleted.",id);
+    }
+
+    @Override
+    public DoctorResponseDto findByEmail(String email) {
+        Doctor doctor=doctorRepository.findByEmail(email)
+                .orElseThrow(()->new ResourceNotFound("Doctor not found with email: "+email));
+        return DoctorResponseDto.fromEntity(doctor);
     }
 
     @Override
@@ -162,5 +187,30 @@ public class DoctorService implements IDoctorService{
     public boolean existsByPhoneNumber(String phoneNumber) {
         log.debug("Verifying id Doctor with phoneNumber {} exists.",phoneNumber);
         return doctorRepository.existsByPhoneNumber(phoneNumber);
+    }
+
+    @Override
+    public boolean existsByDni(String dni) {
+        return doctorRepository.existsByDni(dni);
+    }
+
+    @Transactional
+    public void disableDoctorByDni(String dni){
+        log.debug("Attempting to disabled Doctor with dni {}",dni);
+        if (!doctorRepository.existsByDni(dni)) {
+            throw new RuntimeException("Doctor with DNI " + dni + " not found");
+        }
+        doctorRepository.disableDoctorByDni(dni);
+        log.info("Doctor {} {} with dni {} successfully disabled.",dni);
+    }
+
+    @Transactional
+    public void enableDoctorByDni(String dni){
+        log.debug("Attempting to enable Doctor with dni {}",dni);
+        if (!doctorRepository.existsByDni(dni)) {
+            throw new RuntimeException("Doctor with DNI " + dni + " not found");
+        }
+        doctorRepository.enableDoctorByDni(dni);
+        log.info("Doctor {} {} with dni {} successfully enable.",dni);
     }
 }

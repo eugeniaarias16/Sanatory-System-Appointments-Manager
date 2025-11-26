@@ -10,6 +10,7 @@ import com.sanatoryApp.UserService.exception.ResourceNotFound;
 import com.sanatoryApp.UserService.repository.ISecretaryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class SecretaryService implements ISecretaryService{
 
     private final ISecretaryRepository secretaryRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<SecretaryResponseDto> findAll() {
@@ -51,6 +53,27 @@ public class SecretaryService implements ISecretaryService{
 
     @Transactional
     @Override
+    public void disableSecretaryByDni(String dni) {
+        log.debug("Attempting to disable Secretary with dni {}",dni);
+        if(!existsByDni(dni)){
+            throw new ResourceNotFound("Secretary not found with dni:"+dni);
+        }
+        secretaryRepository.disableSecretaryByDni(dni);
+        log.info("Secretary with dni {} successfully disable.",dni);
+    }
+
+    @Override
+    public void enableSecretaryByDni(String dni) {
+        log.debug("Attempting to enable Secretary with dni {}",dni);
+        if(!existsByDni(dni)){
+            throw new ResourceNotFound("Secretary not found with dni:"+dni);
+        }
+        secretaryRepository.enableSecretaryByDni(dni);
+        log.info("Secretary with dni {} successfully enabled.",dni);
+    }
+
+    @Transactional
+    @Override
     public SecretaryResponseDto createSecretary(SecretaryCreateDto dto) {
         if(existsByEmail(dto.getEmail())){
             throw new DuplicateResourceException("Secretary already exists with email:"+dto.getEmail());
@@ -59,7 +82,11 @@ public class SecretaryService implements ISecretaryService{
             throw new DuplicateResourceException("Secretary already exists with dni:"+dto.getDni());
         }
         log.debug("Creating Secretary...");
+
+        String defaultPassword=passwordEncoder.encode(dto.getDni());
+
         Secretary secretary=dto.toEntity();
+        secretary.setPassword(defaultPassword);
         Secretary saved =secretaryRepository.save(secretary);
         log.info("Secretary successfully created");
         return SecretaryResponseDto.fromEntity(saved);

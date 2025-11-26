@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.List;
 @RequestMapping("/patient")
 @RequiredArgsConstructor
 @Tag(name = "Patient Management",description ="API for managing Patient's information." )
-
+@PreAuthorize("hasRole('SECRETARY')")
 public class PatientController {
 
     private final IPatientService patientService;
@@ -60,7 +61,7 @@ public class PatientController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    /* =================== PUT ENDPOINTS =================== */
+    /* =================== PUT/PATCH ENDPOINTS =================== */
     @Operation(summary = "Update Patient by id")
     @PutMapping("/update/id/{id}")
     public ResponseEntity<PatientResponseDto>updatePatientById(@PathVariable Long id,
@@ -75,6 +76,20 @@ public class PatientController {
                                                                 @Valid @RequestBody PatientUpdateDto dto){
         PatientResponseDto responseDto=patientService.updatePatientByDni(dni,dto);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @PatchMapping("/disable/{dni}")
+    @Operation(summary = "Disable Patient by dni")
+    public ResponseEntity<String> disablePatientByDni(@PathVariable("dni") String dni){
+        patientService.disablePatientByDni(dni);
+        return ResponseEntity.ok("Patient with dni "+dni+" successfully disabled.");
+    }
+
+    @PatchMapping("/enable/{dni}")
+    @Operation(summary = "Enable Patient by dni")
+    public ResponseEntity<String> enablePatientByDni(@PathVariable("dni") String dni){
+        patientService.enablePatientByDni(dni);
+        return ResponseEntity.ok("Patient with dni "+dni+" successfully enabled.");
     }
 
     /* =================== DELETE ENDPOINTS =================== */

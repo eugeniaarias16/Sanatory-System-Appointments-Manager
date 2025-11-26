@@ -7,6 +7,7 @@ public record DoctorResponseDto(
         String firstName,
         String lastName,
         String email,
+        String dni,
         String phoneNumber
 ) {
     public static DoctorResponseDto fromEntity(Doctor doctor){
@@ -15,6 +16,7 @@ public record DoctorResponseDto(
                 doctor.getFirstName(),
                 doctor.getLastName(),
                 doctor.getEmail(),
+                doctor.getDni(),
                 doctor.getPhoneNumber()
         );
     }

@@ -3,6 +3,7 @@ package com.sanatoryApp.UserService.service;
 import com.sanatoryApp.UserService.dto.Request.PatientCreateDto;
 import com.sanatoryApp.UserService.dto.Request.PatientUpdateDto;
 import com.sanatoryApp.UserService.dto.Response.PatientResponseDto;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -22,4 +23,8 @@ public interface IPatientService {
     boolean existsByDni(String dni);
     boolean existsByEmail(String email);
     boolean existsByPhoneNumber(String phoneNumber);
+
+    void disablePatientByDni(String dni);
+    void enablePatientByDni(String dni);
+
 }

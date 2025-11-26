@@ -25,4 +25,19 @@ public class Patient {
     private String email;
     @Column(unique = true)
     private String phoneNumber;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    private boolean enabled=true;
+
+    @Column(nullable = false)
+    private boolean credentialsExpired=false;
+
+    @Column(nullable = false)
+    private boolean accountLocked=false;
+
+
+
 }

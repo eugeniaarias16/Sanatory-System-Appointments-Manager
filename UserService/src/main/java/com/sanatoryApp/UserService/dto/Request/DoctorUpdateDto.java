@@ -9,6 +9,7 @@ public record DoctorUpdateDto(
         String lastName,
         @Email(message = "Invalid format")
         String email,
+        String dni,
         @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid international phone format")
         @Schema(description = "Phone Number in international format ",example = "+5491112345678")
         String phoneNumber

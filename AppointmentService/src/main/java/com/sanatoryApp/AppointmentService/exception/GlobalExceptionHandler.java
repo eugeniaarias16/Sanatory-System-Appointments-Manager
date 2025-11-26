@@ -14,6 +14,15 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
 
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<Map<String,String>>handleServiceUnavailable(ServiceUnavailableException ex){
+        Map error=new HashMap<>();
+        error.put("error","Not Found");
+        error.put("message",ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+
     @ExceptionHandler(ResourceNotFound.class)
     public ResponseEntity<Map<String,String>>handleNotFound(ResourceNotFound ex){
         Map error=new HashMap<>();

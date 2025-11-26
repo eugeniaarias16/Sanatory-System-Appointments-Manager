@@ -9,6 +9,7 @@ import com.sanatoryApp.UserService.exception.ResourceNotFound;
 import com.sanatoryApp.UserService.repository.IPatientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PatientService implements IPatientService{
     private final IPatientRepository patientRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<PatientResponseDto> findAll() {
@@ -191,8 +193,12 @@ public class PatientService implements IPatientService{
         if(existsByDni(dni)){
             throw new DuplicateResourceException("Patient already exit with dni: "+dni);
         }
+
+        String defaultPassword=passwordEncoder.encode(dni);
+
         log.debug("Creating new patient...");
         Patient patient=dto.toEntity();
+        patient.setPassword(defaultPassword);
         Patient saved=patientRepository.save(patient);
         log.info("New Patient with id {} successfully created",saved.getId());
         return PatientResponseDto.fromEntity(saved);
@@ -249,5 +255,22 @@ public class PatientService implements IPatientService{
     public boolean existsByPhoneNumber(String phoneNumber) {
         log.debug("Verifying if Patient with phoneNumber {} exists.",phoneNumber);
         return patientRepository.existsByPhoneNumber(phoneNumber);
+    }
+
+    @Transactional
+    @Override
+    public void disablePatientByDni(String dni) {
+        log.debug("Attempting to disable patient with DNI {}",dni);
+        patientRepository.disablePatientByDni(dni);
+        log.debug("Patient successfully disabled patient with DNI {}",dni);
+
+    }
+
+    @Transactional
+    @Override
+    public void enablePatientByDni(String dni) {
+        log.debug("Attempting to enable patient with DNI {}",dni);
+        patientRepository.enablePatientByDni(dni);
+        log.debug("Patient successfully enabled patient with DNI {}",dni);
     }
 }

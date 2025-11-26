@@ -23,4 +23,13 @@ public class Secretary {
     private String lastName;
     @Column(unique = true)
     private String email;
+
+    @Column(nullable = false)
+    private String password;
+    @Column(nullable = false)
+    private boolean enabled=true;
+    @Column(nullable = false)
+    private boolean credentialsExpired=false;
+    @Column(nullable = false)
+    private boolean accountLocked=false;
 }
