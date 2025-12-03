@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.ServiceUnavailableException;
@@ -21,6 +22,7 @@ import java.util.List;
 @RequestMapping("/appointment")
 @RequiredArgsConstructor
 @Tag(name = "Appointment", description = "Appointment management endpoints")
+@PreAuthorize("hasRole('SECRETARY')")
 public class AppointmentController {
 
     private final IAppointmentService appointmentService;
@@ -33,6 +35,7 @@ public class AppointmentController {
 
     @Operation(summary = "Get Appointment by patient id")
     @GetMapping("/patient/{patientId}")
+    @PreAuthorize("@securityService.isSecretaryOrPatient(#patientId)")
     public ResponseEntity<List<AppointmentResponseDto>> findByPatientId(@PathVariable Long patientId){
         return ResponseEntity.ok(appointmentService.findByPatientId(patientId));
     }
@@ -51,6 +54,7 @@ public class AppointmentController {
 
     @Operation(summary = "Get Appointment by patient id and date")
     @GetMapping("/patient/search-by-date")
+    @PreAuthorize("@securityService.isSecretaryOrPatient(#patientId)")
     public ResponseEntity<List<AppointmentResponseDto>> findByPatientIdAndDate(
             @RequestParam Long patientId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
@@ -59,6 +63,7 @@ public class AppointmentController {
 
     @Operation(summary = "Get Appointment by patient id and range date")
     @GetMapping("/patient/id/{patientId}/search-date-range")
+    @PreAuthorize("@securityService.isSecretaryOrPatient(#patientId)")
     public ResponseEntity<List<AppointmentResponseDto>> findByPatientIdAndDateBetween(
             @PathVariable Long patientId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -81,6 +86,7 @@ public class AppointmentController {
             description = "Returns future appointments. If date is not provided, uses today's date."
     )
     @GetMapping("/patient/id/{patientId}/upcoming")
+    @PreAuthorize("@securityService.isSecretaryOrPatient(#patientId)")
     public ResponseEntity<List<AppointmentResponseDto>> findUpcomingAppointmentsByPatientId(
             @PathVariable Long patientId,
             @Parameter(description = "Optional reference date. If not provided, uses today's date")
@@ -114,12 +120,14 @@ public class AppointmentController {
 
     @Operation(summary = "Get Appointment by doctor id")
     @GetMapping("/doctor/{doctorId}")
+    @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
     public ResponseEntity<List<AppointmentResponseDto>> findByDoctorId(@PathVariable Long doctorId){
         return ResponseEntity.ok(appointmentService.findByDoctorId(doctorId));
     }
 
     @Operation(summary = "Get Appointment by doctor id and range date")
     @GetMapping("/doctor/{doctorId}/search-date-range")
+    @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
     public ResponseEntity<List<AppointmentResponseDto>> findByDoctorIdAndDateBetween(
             @PathVariable Long doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -130,6 +138,7 @@ public class AppointmentController {
 
     @Operation(summary = "Get Appointment by doctor calendar id and doctor id")
     @GetMapping("/doctor/{doctorId}/search-by-calendar")
+    @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
     public ResponseEntity<List<AppointmentResponseDto>> findByDoctorIdAndDoctorCalendarId(
             @PathVariable Long doctorId,
             @RequestParam Long calendarId){
@@ -141,6 +150,7 @@ public class AppointmentController {
             description = "Returns appointments for a specific date. If date is not provided, uses today's date."
     )
     @GetMapping("/doctor/{doctorId}/today")
+    @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
     public ResponseEntity<List<AppointmentResponseDto>> findTodayAppointmentsByDoctorId(
             @PathVariable Long doctorId
     ){

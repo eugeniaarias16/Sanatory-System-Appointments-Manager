@@ -5,7 +5,7 @@ import com.sanatoryApp.api_gate_way.dto.request.LoginRequest;
 import com.sanatoryApp.api_gate_way.dto.request.ValidateCredentialsRequest;
 import com.sanatoryApp.api_gate_way.dto.response.AuthResponse;
 import com.sanatoryApp.api_gate_way.dto.response.ValidateCredentialsResponse;
-import com.sanatoryApp.api_gate_way.security.JwtUtils;
+import com.sanatoryApp.api_gate_way.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

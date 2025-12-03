@@ -32,10 +32,11 @@ public class PatientController {
         return ResponseEntity.ok(list);
     }
 
+    @PreAuthorize("@securityService.isSecretaryOrPatient(#patientId)")
     @Operation(summary = "Get Patient by id")
-    @GetMapping("/id/{id}")
-    public ResponseEntity<PatientResponseDto>findPatientById(@PathVariable Long id){
-        PatientResponseDto responseDto=patientService.findPatientById(id);
+    @GetMapping("/id/{patientId}")
+    public ResponseEntity<PatientResponseDto>findPatientById(@PathVariable Long patientId){
+        PatientResponseDto responseDto=patientService.findPatientById(patientId);
         return ResponseEntity.ok(responseDto);
     }
 
@@ -62,11 +63,12 @@ public class PatientController {
     }
 
     /* =================== PUT/PATCH ENDPOINTS =================== */
+    @PreAuthorize("@securityService.isSecretaryOrPatient(#patientId)")
     @Operation(summary = "Update Patient by id")
-    @PutMapping("/update/id/{id}")
-    public ResponseEntity<PatientResponseDto>updatePatientById(@PathVariable Long id,
+    @PutMapping("/update/id/{patientId}")
+    public ResponseEntity<PatientResponseDto>updatePatientById(@PathVariable Long patientId,
                                                                @Valid @RequestBody PatientUpdateDto dto){
-        PatientResponseDto responseDto=patientService.updatePatientById(id,dto);
+        PatientResponseDto responseDto=patientService.updatePatientById(patientId,dto);
         return ResponseEntity.ok(responseDto);
     }
 

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.DayOfWeek;
@@ -18,6 +19,7 @@ import java.util.List;
 @RequestMapping("/availabilityPattern")
 @RequiredArgsConstructor
 @Tag(name = "Availability Pattern", description = "Availability Pattern management endpoints")
+@PreAuthorize("hasRole('SECRETARY')")
 public class AvailabilityPatternController {
 
     private final IAvailabilityPatternService availabilityPatternService;

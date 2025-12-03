@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/patientInsurance")
 @Tag(name = "Patient Insurance",description = "Operations related to Patient Insurance ")
+@PreAuthorize("hasRole('SECRETARY')")
 public class PatientInsuranceController {
 
     private final IPatientInsuranceService patientInsuranceService;

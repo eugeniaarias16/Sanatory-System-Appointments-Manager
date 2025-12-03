@@ -36,9 +36,10 @@ public class DoctorController {
 
     
     @Operation(summary = "Get Doctor by id")
-    @GetMapping("/{id}")
-    public ResponseEntity<DoctorResponseDto> findDoctorById(@PathVariable Long id){
-        DoctorResponseDto doctor= doctorService.findDoctorById(id);
+    @GetMapping("/{doctorId}")
+    @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
+    public ResponseEntity<DoctorResponseDto> findDoctorById(@PathVariable Long doctorId){
+        DoctorResponseDto doctor= doctorService.findDoctorById(doctorId);
         return ResponseEntity.ok(doctor);
     }
 
@@ -78,10 +79,11 @@ public class DoctorController {
     /* =================== PUT/PATCH ENDPOINTS =================== */
     
     @Operation(summary = "Update Doctor by id")
-    @PutMapping("/update/{id}")
-    public ResponseEntity<DoctorResponseDto> updateDoctorById(@PathVariable Long id,
+    @PutMapping("/update/{doctorId}")
+    @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
+    public ResponseEntity<DoctorResponseDto> updateDoctorById(@PathVariable Long doctorId,
                                                               @Valid @RequestBody DoctorUpdateDto dto){
-        DoctorResponseDto doctor= doctorService.updateDoctorById(id,dto);
+        DoctorResponseDto doctor= doctorService.updateDoctorById(doctorId,dto);
         return ResponseEntity.ok(doctor);
     }
 

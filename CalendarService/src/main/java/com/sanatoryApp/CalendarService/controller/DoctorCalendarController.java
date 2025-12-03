@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequestMapping("/doctorCalendar")
 @RequiredArgsConstructor
 @Tag(name = "Doctor Calendar", description = "Doctor Calendar management endpoints")
+@PreAuthorize("hasRole('SECRETARY')")
 public class DoctorCalendarController {
 
     private final IDoctorCalendarService doctorCalendarService;
@@ -31,6 +33,7 @@ public class DoctorCalendarController {
 
     @Operation(summary = "Get active Doctor Calendar by doctor id")
     @GetMapping("/active/doctor/{doctorId}")
+    @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
     public ResponseEntity<List<DoctorCalendarResponseDto>> findByDoctorIdAndIsActiveTrue(
             @PathVariable Long doctorId) {
         return ResponseEntity.ok(doctorCalendarService.findByDoctorIdAndIsActiveTrue(doctorId));
@@ -38,12 +41,14 @@ public class DoctorCalendarController {
 
     @Operation(summary = "Get Doctor Calendar by doctor id")
     @GetMapping("/doctor/{doctorId}")
+    @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
     public ResponseEntity<List<DoctorCalendarResponseDto>> findByDoctorId(@PathVariable Long doctorId) {
         return ResponseEntity.ok(doctorCalendarService.findByDoctorId(doctorId));
     }
 
     @Operation(summary = "Get Doctor Calendar by doctor id and name")
     @GetMapping("/active/search")
+    @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
     public ResponseEntity<DoctorCalendarResponseDto> findByDoctorIdAndName(
             @RequestParam Long doctorId,
             @RequestParam String name) {

@@ -1,5 +1,4 @@
-package com.sanatoryApp.UserService.config;
-
+package com.sanatoryApp.HealthInsuranceService.config;
 
 import com.sanatoryApp.shared_security.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -19,28 +18,25 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
-        return httpSecurity.
-                csrf(csrf->csrf.disable())
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity)throws Exception{
+        return httpSecurity
+                .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(auth->auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/patient/create").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/actuator/health").permitAll()
+                        .anyRequest().authenticated())
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
+
+
 
 }
