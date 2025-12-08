@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: calendar-service
+  config:
+    import: "optional:configserver:http://localhost:8888"
+  cloud:
+    config:
+      fail-fast: false
+
+# Fallback local values (if Config Server unavailable)
+server:
+  port: 8086
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:default-dev-secret-123}
+    issuer: ${JWT_ISSUER:default-value}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}

@@ -7,6 +7,16 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="config-server" />
+      </profile>
+      <profile name="Annotation profile for api-gate-way" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
+        </processorPath>
+        <module name="api-gate-way" />
       </profile>
       <profile name="Annotation profile for Shared Security Module" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -16,9 +26,8 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
         <module name="shared-security" />
-        <module name="api-gate-way" />
       </profile>
-      <profile name="Annotation profile for UserService" enabled="true">
+      <profile name="Annotation profile for eureka-server" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -26,8 +35,8 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar" />
         </processorPath>
         <module name="HealthInsuranceService" />
-        <module name="UserService" />
         <module name="eureka-server" />
+        <module name="UserService" />
         <module name="CalendarService" />
         <module name="AppointmentService" />
       </profile>
@@ -44,6 +53,7 @@
       <module name="HealthInsuranceService" options="-parameters" />
       <module name="UserService" options="-parameters" />
       <module name="api-gate-way" options="-parameters" />
+      <module name="config-server" options="-parameters" />
       <module name="eureka-server" options="-parameters" />
       <module name="shared-security" options="" />
     </option>
