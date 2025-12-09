@@ -21,6 +21,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        // Swagger UI endpoints
+                        .requestMatchers("/api/v1/swagger-ui/**").permitAll()
+                        .requestMatchers("/api/v1/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/v1/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
