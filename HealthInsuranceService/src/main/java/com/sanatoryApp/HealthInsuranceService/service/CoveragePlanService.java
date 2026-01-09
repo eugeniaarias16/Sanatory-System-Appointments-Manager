@@ -43,12 +43,12 @@ public class CoveragePlanService implements ICoveragePlanService {
     @Transactional
     @Override
     public CoveragePlanResponseDto createCoveragePlan(CoveragePlanCreateDto dto) {
-        HealthInsurance healthInsurance = healthInsuranceService.getHealthInsuranceById(dto.getHealthInsuranceId());
+        HealthInsurance healthInsurance = healthInsuranceService.getHealthInsuranceById(dto.healthInsuranceId());
 
-        if (existsByNameAndInsurance(dto.getName(), dto.getHealthInsuranceId(), null)) {
+        if (existsByNameAndInsurance(dto.name(), dto.healthInsuranceId(), null)) {
             throw new DuplicateResourceException(
-                    "Already exists a Coverage Plan with name " + dto.getName() +
-                            " and insurance id " + dto.getHealthInsuranceId()
+                    "Already exists a Coverage Plan with name " + dto.name() +
+                            " and insurance id " + dto.healthInsuranceId()
             );
         }
 

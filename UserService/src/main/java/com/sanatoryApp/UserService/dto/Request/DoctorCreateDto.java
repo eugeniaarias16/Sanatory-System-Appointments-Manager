@@ -11,29 +11,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class DoctorCreateDto {
 
-    @NotBlank(message = "First Name is mandatory")
-    private String firstName;
+public record DoctorCreateDto(
+        @NotBlank(message = "First Name is mandatory")
+        String firstName,
 
-    @NotBlank(message = "Last Name is mandatory")
-    private String lastName;
+        @NotBlank(message = "Last Name is mandatory")
+        String lastName,
 
-    @Email(message = "Invalid Format")
-    @NotBlank(message = "Email is mandatory")
-    private String email;
+        @Email(message = "Invalid Format")
+        @NotBlank(message = "Email is mandatory")
+        String email,
 
-    @NotBlank(message = "Dni is mandatory")
-    private String dni;
+        @NotBlank(message = "Dni is mandatory")
+        String dni,
 
-    @NotBlank
-    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid international phone format")
-    @Schema(description = "Phone Number in international format ",example = "+5491112345678")
-    private String phoneNumber;
+        @NotBlank
+        @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid international phone format")
+        @Schema(description = "Phone Number in international format ",example = "+5491112345678")
+        String phoneNumber
+) {
 
     public Doctor toEntity(){
         Doctor doctor=new Doctor();

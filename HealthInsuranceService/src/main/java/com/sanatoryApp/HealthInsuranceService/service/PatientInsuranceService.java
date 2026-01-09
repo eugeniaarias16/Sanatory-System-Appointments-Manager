@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -53,20 +52,20 @@ public class PatientInsuranceService implements IPatientInsuranceService {
 
         PatientDto patientDto;
         try {
-            patientDto = userServiceApi.getPatientByDni(dto.getPatientDni());
+            patientDto = userServiceApi.getPatientByDni(dto.patientDni());
         } catch (FeignException.NotFound e) {
-            throw new ResourceNotFound("Patient with DNI: " + dto.getPatientDni() + " not found.");
+            throw new ResourceNotFound("Patient with DNI: " + dto.patientDni() + " not found.");
         } catch (FeignException e) {
             throw new RuntimeException("Error communicating with User Service: " + e.getMessage(), e);
         }
 
-        HealthInsurance healthInsurance=healthInsuranceService.getHealthInsuranceById(dto.getHealthInsuranceId());
+        HealthInsurance healthInsurance=healthInsuranceService.getHealthInsuranceById(dto.healthInsuranceId());
 
-        CoveragePlan coveragePlan=coveragePlanService.getCoveragePlanById(dto.getCoveragePlanId());
+        CoveragePlan coveragePlan=coveragePlanService.getCoveragePlanById(dto.coveragePlanId());
 
-        if (!coveragePlanService.existsByIdAndHealthInsuranceId(dto.getCoveragePlanId(), dto.getHealthInsuranceId())) {
-            throw new IllegalArgumentException("No coverage Plan found with id: " + dto.getCoveragePlanId() +
-                    " and Health Insurance id: " + dto.getHealthInsuranceId());
+        if (!coveragePlanService.existsByIdAndHealthInsuranceId(dto.coveragePlanId(), dto.healthInsuranceId())) {
+            throw new IllegalArgumentException("No coverage Plan found with id: " + dto.coveragePlanId() +
+                    " and Health Insurance id: " + dto.healthInsuranceId());
         }
 
         PatientInsurance patientInsurance = dto.toEntity(healthInsurance,coveragePlan);
@@ -82,7 +81,7 @@ public class PatientInsuranceService implements IPatientInsuranceService {
         log.debug("Attempting to update the plan for the patient with the ID: {}", id);
         PatientInsurance existingPatientInsurance = getPatientInsuranceById(id);
 
-       CoveragePlan coveragePlan=coveragePlanService.getCoveragePlanById(id);
+       CoveragePlan coveragePlan=coveragePlanService.getCoveragePlanById(coveragePlanId);
 
         log.info("Updating the patient's coverage plan to the new plan with the ID: {}", coveragePlanId);
         existingPatientInsurance.setCoveragePlan(coveragePlan);

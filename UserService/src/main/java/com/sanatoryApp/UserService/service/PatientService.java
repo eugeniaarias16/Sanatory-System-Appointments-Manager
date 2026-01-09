@@ -55,7 +55,7 @@ public class PatientService implements IPatientService{
 
                 //verifying if dni already exists
                 if(existsByDni(newDni)){
-                    throw new DuplicateResourceException("Already exists Patient with dni: "+newDni);
+                    throw new DuplicateResourceException("Patient already exists with dni: "+newDni);
                 }
                 existingPatient.setDni(newDni);
             }
@@ -81,7 +81,7 @@ public class PatientService implements IPatientService{
 
                 //verifying if new email already exists
                 if(existsByEmail(newEmail)){
-                    throw new DuplicateResourceException("Already exists Patient with email: "+newEmail);
+                    throw new DuplicateResourceException("Patient already exists with email: "+newEmail);
                 }
                 //updating email
                 existingPatient.setEmail(newEmail);
@@ -96,7 +96,7 @@ public class PatientService implements IPatientService{
             if(!existingPatient.getPhoneNumber().equals(newPhoneNumber)){
                 //verifying if new phone number already exists
                 if(existsByPhoneNumber(newPhoneNumber)){
-                    throw new DuplicateResourceException("Already exists Patient with phone number: "+newPhoneNumber);
+                    throw new DuplicateResourceException("Patient already exists with phone number: "+newPhoneNumber);
                 }
                 //updating phone number
                 existingPatient.setPhoneNumber(newPhoneNumber);
@@ -113,7 +113,7 @@ public class PatientService implements IPatientService{
     public PatientResponseDto updatePatientByDni(String dni, PatientUpdateDto dto) {
         log.debug("Verifying if patient with dni {} exists...",dni);
         Patient existingPatient=patientRepository.findPatientByDni(dni)
-                .orElseThrow(()->new ResourceNotFound("Patient not found found with dni: "+dni));
+                .orElseThrow(()->new ResourceNotFound("Patient not found with dni: "+dni));
         log.debug("Updating patient with dni {}...",dni);
 
         //updating dni
@@ -125,7 +125,7 @@ public class PatientService implements IPatientService{
 
                 //verifying if dni already exists
                 if(existsByDni(newDni)){
-                    throw new DuplicateResourceException("Already exists Patient with dni: "+newDni);
+                    throw new DuplicateResourceException("Patient already exists with dni: "+newDni);
                 }
                 existingPatient.setDni(newDni);
             }
@@ -151,7 +151,7 @@ public class PatientService implements IPatientService{
 
                 //verifying if new email already exists
                 if(existsByEmail(newEmail)){
-                    throw new DuplicateResourceException("Already exists Patient with email: "+newEmail);
+                    throw new DuplicateResourceException("Patient already exists with email: "+ newEmail);
                 }
                 //updating email
                 existingPatient.setEmail(newEmail);
@@ -166,7 +166,7 @@ public class PatientService implements IPatientService{
             if(!existingPatient.getPhoneNumber().equals(newPhoneNumber)){
                 //verifying if new phone number already exists
                 if(existsByPhoneNumber(newPhoneNumber)){
-                    throw new DuplicateResourceException("Already exists Patient with phone number: "+newPhoneNumber);
+                    throw new DuplicateResourceException("Patient already exists with phone number: "+newPhoneNumber);
                 }
                 //updating phone number
                 existingPatient.setPhoneNumber(newPhoneNumber);
@@ -181,15 +181,15 @@ public class PatientService implements IPatientService{
     @Transactional
     @Override
     public PatientResponseDto createPatient(PatientCreateDto dto) {
-        String email=dto.getEmail();
+        String email=dto.email();
         if(existsByEmail(email)){
             throw new DuplicateResourceException("Patient already exists with email: "+email);
         }
-        String phoneNumber= dto.getPhoneNumber();
+        String phoneNumber= dto.phoneNumber();
         if (existsByPhoneNumber(phoneNumber)){
             throw new DuplicateResourceException("Patient already exists with phone  number: "+phoneNumber);
         }
-        String dni=dto.getDni();
+        String dni=dto.dni();
         if(existsByDni(dni)){
             throw new DuplicateResourceException("Patient already exit with dni: "+dni);
         }
@@ -217,7 +217,7 @@ public class PatientService implements IPatientService{
     @Override
     public void deletePatientByDni(String dni) {
         Patient existingPatient=patientRepository.findPatientByDni(dni)
-                .orElseThrow(()->new ResourceNotFound("Patient not found found with dni: "+dni));
+                .orElseThrow(()->new ResourceNotFound("Patient not found with dni: "+dni));
         log.info("Deleting patient with dni {}...",dni);
         patientRepository.delete(existingPatient);
     }

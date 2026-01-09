@@ -4,46 +4,42 @@ import com.sanatoryApp.CalendarService.entity.CalendarException;
 import com.sanatoryApp.CalendarService.entity.DoctorCalendar;
 import com.sanatoryApp.CalendarService.entity.ExceptionType;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Data
-public class CalendarExceptionCreateDto {
-
+public record CalendarExceptionCreateDto(
         @NotNull(message = "Doctor Calendar ID is required")
-        private Long doctorCalendarId;
+        Long doctorCalendarId,
 
         @NotNull(message = "Date is required")
-        private LocalDate date;
+        LocalDate date,
 
-        private LocalTime startTime;
+        LocalTime startTime,
 
-
-        private LocalTime endTime;
+        LocalTime endTime,
 
         @NotNull(message = "Exception type is required")
-        private ExceptionType exceptionType;
+        ExceptionType exceptionType,
 
-        private String reason;
+        String reason,
 
         @NotNull(message = "isGlobal flag is required")
-        private boolean isGlobal;
+        boolean isGlobal
+) {
+    public CalendarException toEntity(DoctorCalendar doctorCalendar) {
+        CalendarException calendarException = new CalendarException();
+        calendarException.setDoctorCalendar(doctorCalendar);
+        calendarException.setDate(date);
+        calendarException.setStartTime(startTime);
+        calendarException.setEndTime(endTime);
+        calendarException.setExceptionType(exceptionType);
 
-        public CalendarException toEntity(DoctorCalendar doctorCalendar) {
-                CalendarException calendarException = new CalendarException();
-                calendarException.setDoctorCalendar(doctorCalendar);
-                calendarException.setDate(date);
-                calendarException.setStartTime(startTime);
-                calendarException.setEndTime(endTime);
-                calendarException.setExceptionType(exceptionType);
-
-                if (reason != null && !reason.trim().isEmpty()) {
-                        calendarException.setReason(reason.trim().toLowerCase());
-                }
-
-                calendarException.setGlobal(isGlobal);
-                return calendarException;
+        if (reason != null && !reason.trim().isEmpty()) {
+            calendarException.setReason(reason.trim().toLowerCase());
         }
+
+        calendarException.setGlobal(isGlobal);
+        return calendarException;
+    }
 }

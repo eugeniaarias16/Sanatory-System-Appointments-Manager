@@ -56,7 +56,7 @@ public class SecretaryService implements ISecretaryService{
     public void disableSecretaryByDni(String dni) {
         log.debug("Attempting to disable Secretary with dni {}",dni);
         if(!existsByDni(dni)){
-            throw new ResourceNotFound("Secretary not found with dni:"+dni);
+            throw new ResourceNotFound("Secretary not found with dni: "+dni);
         }
         secretaryRepository.disableSecretaryByDni(dni);
         log.info("Secretary with dni {} successfully disable.",dni);
@@ -66,7 +66,7 @@ public class SecretaryService implements ISecretaryService{
     public void enableSecretaryByDni(String dni) {
         log.debug("Attempting to enable Secretary with dni {}",dni);
         if(!existsByDni(dni)){
-            throw new ResourceNotFound("Secretary not found with dni:"+dni);
+            throw new ResourceNotFound("Secretary not found with dni: "+dni);
         }
         secretaryRepository.enableSecretaryByDni(dni);
         log.info("Secretary with dni {} successfully enabled.",dni);
@@ -75,15 +75,15 @@ public class SecretaryService implements ISecretaryService{
     @Transactional
     @Override
     public SecretaryResponseDto createSecretary(SecretaryCreateDto dto) {
-        if(existsByEmail(dto.getEmail())){
-            throw new DuplicateResourceException("Secretary already exists with email:"+dto.getEmail());
+        if(existsByEmail(dto.email())){
+            throw new DuplicateResourceException("Secretary already exists with email: "+dto.email());
         }
-        if (existsByDni(dto.getDni())){
-            throw new DuplicateResourceException("Secretary already exists with dni:"+dto.getDni());
+        if (existsByDni(dto.dni())){
+            throw new DuplicateResourceException("Secretary already exists with dni: "+dto.dni());
         }
         log.debug("Creating Secretary...");
 
-        String defaultPassword=passwordEncoder.encode(dto.getDni());
+        String defaultPassword=passwordEncoder.encode(dto.dni());
 
         Secretary secretary=dto.toEntity();
         secretary.setPassword(defaultPassword);
@@ -96,7 +96,7 @@ public class SecretaryService implements ISecretaryService{
     @Override
     public SecretaryResponseDto updateSecretaryById(Long id, SecretaryUpdateDto dto) {
         Secretary existingSecretary=secretaryRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFound("Secretary not found with id:"+id));
+                .orElseThrow(()->new ResourceNotFound("Secretary not found with id: "+id));
 
         if(dto.dni()!=null && !dto.dni().isEmpty()){
             String newDni= dto.dni();
@@ -132,7 +132,7 @@ public class SecretaryService implements ISecretaryService{
     @Override
     public SecretaryResponseDto updateSecretaryByDni(String dni, SecretaryUpdateDto dto) {
         Secretary existingSecretary=secretaryRepository.findSecretaryByDni(dni)
-                .orElseThrow(()->new ResourceNotFound("Secretary not found with dni:"+dni));
+                .orElseThrow(()->new ResourceNotFound("Secretary not found with dni: "+dni));
 
         if(dto.dni()!=null && !dto.dni().isEmpty()){
             String newDni= dto.dni();
@@ -180,7 +180,7 @@ public class SecretaryService implements ISecretaryService{
     @Override
     public void deleteSecretaryByDni(String dni) {
         Secretary secretary= secretaryRepository.findSecretaryByDni(dni)
-                .orElseThrow(()-> new ResourceNotFound("Secretary not found with id: "+dni));
+                .orElseThrow(()-> new ResourceNotFound("Secretary not found with dni: "+dni));
         log.debug("Deleting Secretary with dni:{}",dni);
         secretaryRepository.delete(secretary);
         log.info("Secretary with dni: {} successfully deleted.",dni);

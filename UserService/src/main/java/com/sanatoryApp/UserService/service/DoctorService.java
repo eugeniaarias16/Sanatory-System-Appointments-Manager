@@ -108,18 +108,18 @@ public class DoctorService implements IDoctorService{
     @Override
     public DoctorResponseDto createDoctor(DoctorCreateDto dto) {
         log.debug("Attempting to create new Doctor with values: {}",dto);
-        if(existsByEmail(dto.getEmail())){
-            throw new DuplicateResourceException("Doctor already exists with email: "+dto.getEmail());
+        if(existsByEmail(dto.email())){
+            throw new DuplicateResourceException("Doctor already exists with email: "+dto.email());
         }
-        if(existsByPhoneNumber(dto.getPhoneNumber())){
-            throw new DuplicateResourceException("Doctor already exists with phone number: "+dto.getPhoneNumber());
-        }
-
-        if(existsByDni(dto.getDni())){
-            throw new DuplicateResourceException("Doctor already exists with dni: "+dto.getDni());
+        if(existsByPhoneNumber(dto.phoneNumber())){
+            throw new DuplicateResourceException("Doctor already exists with phone number: "+dto.phoneNumber());
         }
 
-        String defaultPassword= passwordEncoder.encode(dto.getDni());
+        if(existsByDni(dto.dni())){
+            throw new DuplicateResourceException("Doctor already exists with dni: "+dto.dni());
+        }
+
+        String defaultPassword= passwordEncoder.encode(dto.dni());
 
 
         Doctor doctor=dto.toEntity();

@@ -44,8 +44,8 @@ public class HealthInsuranceService implements IHealthInsuranceService {
     public HealthInsuranceResponseDto createHealthInsurance(HealthInsuranceCreateDto dto) {
         log.debug("Attempting to create Health Insurance with values: {}", dto);
 
-        validateUniqueConstraints(dto.getCompanyName(), dto.getEmail(),
-                dto.getCompanyCode(), dto.getPhoneNumber());
+        validateUniqueConstraints(dto.companyName(), dto.email(),
+                dto.companyCode(), dto.phoneNumber());
 
         HealthInsurance healthInsurance = dto.toEntity();
         HealthInsurance saved = healthInsuranceRepository.save(healthInsurance);
