@@ -80,15 +80,16 @@ public class PatientInsuranceServiceTest {
         coveragePlan.setId(21L);
         coveragePlan.setName("Plan 310");
 
-        PatientInsurance patientInsurance = new PatientInsurance(1L, "30345678", "CRED-003-1234", healthInsurance, coveragePlan, LocalDate.now(), true);
+        PatientInsurance patientInsurance = new PatientInsurance(1L, "30345678", "CRED-0201-5678", healthInsurance, coveragePlan, LocalDate.now(), true);
 
-        PatientInsuranceCreateDto createDto=new PatientInsuranceCreateDto("30345678","CRED-003-1234",201L,21L);
+        PatientInsuranceCreateDto createDto=new PatientInsuranceCreateDto("30345678",201L,21L);
 
         //Mock
         when(userServiceApi.getPatientByDni("30345678")).thenReturn(patientDto);
         when(healthInsuranceService.getHealthInsuranceById(201L)).thenReturn(healthInsurance);
         when(coveragePlanService.getCoveragePlanById(21L)).thenReturn(coveragePlan);
         when(coveragePlanService.existsByIdAndHealthInsuranceId(21L,201L)).thenReturn(true);
+        when(patientInsuranceRepository.existsByCredentialNumber(anyString())).thenReturn(false);
         when(patientInsuranceRepository.save(any(PatientInsurance.class))).thenReturn(patientInsurance);
 
         //Act
@@ -97,11 +98,12 @@ public class PatientInsuranceServiceTest {
         //Assert & Verify
         assertEquals(1L,responseDto.id());
         assertEquals("30345678",responseDto.patientDni());
-        assertEquals("CRED-003-1234",responseDto.credentialNumber());
+        assertEquals("CRED-0201-5678",responseDto.credentialNumber());
         verify(userServiceApi).getPatientByDni(anyString());
         verify(healthInsuranceService).getHealthInsuranceById(anyLong());
         verify(coveragePlanService).getCoveragePlanById(anyLong());
         verify(coveragePlanService).existsByIdAndHealthInsuranceId(anyLong(),anyLong());
+        verify(patientInsuranceRepository).existsByCredentialNumber(anyString());
         verify(patientInsuranceRepository).save(any(PatientInsurance.class));
         verifyNoMoreInteractions(patientInsuranceRepository);
     }
@@ -582,7 +584,7 @@ public class PatientInsuranceServiceTest {
     @Test
     void createPatientInsurance_withInexistentPatient() {
         //Arrange
-        PatientInsuranceCreateDto createDto = new PatientInsuranceCreateDto("99999999", "CRED-003-1234", 201L, 21L);
+        PatientInsuranceCreateDto createDto = new PatientInsuranceCreateDto("99999999", 201L, 21L);
 
         when(userServiceApi.getPatientByDni("99999999")).thenThrow(feign.FeignException.NotFound.class);
 
@@ -598,7 +600,7 @@ public class PatientInsuranceServiceTest {
     void createPatientInsurance_withInexistentHealthInsurance() {
         //Arrange
         PatientDto patientDto = new PatientDto(2L, "30345678", "Maria", "Lopez", "mariaLopez@gmail.com", "+543456789132");
-        PatientInsuranceCreateDto createDto = new PatientInsuranceCreateDto("30345678", "CRED-003-1234", 999L, 21L);
+        PatientInsuranceCreateDto createDto = new PatientInsuranceCreateDto("30345678", 999L, 21L);
 
         when(userServiceApi.getPatientByDni("30345678")).thenReturn(patientDto);
         when(healthInsuranceService.getHealthInsuranceById(999L)).thenThrow(new ResourceNotFound("Health Insurance not found with id: 999"));
@@ -620,7 +622,7 @@ public class PatientInsuranceServiceTest {
         healthInsurance.setId(201L);
         healthInsurance.setCompanyName("OSDE");
 
-        PatientInsuranceCreateDto createDto = new PatientInsuranceCreateDto("30345678", "CRED-003-1234", 201L, 999L);
+        PatientInsuranceCreateDto createDto = new PatientInsuranceCreateDto("30345678", 201L, 999L);
 
         when(userServiceApi.getPatientByDni("30345678")).thenReturn(patientDto);
         when(healthInsuranceService.getHealthInsuranceById(201L)).thenReturn(healthInsurance);
@@ -648,7 +650,7 @@ public class PatientInsuranceServiceTest {
         coveragePlan.setId(21L);
         coveragePlan.setName("Plan 310");
 
-        PatientInsuranceCreateDto createDto = new PatientInsuranceCreateDto("30345678", "CRED-003-1234", 201L, 21L);
+        PatientInsuranceCreateDto createDto = new PatientInsuranceCreateDto("30345678", 201L, 21L);
 
         when(userServiceApi.getPatientByDni("30345678")).thenReturn(patientDto);
         when(healthInsuranceService.getHealthInsuranceById(201L)).thenReturn(healthInsurance);
@@ -669,7 +671,7 @@ public class PatientInsuranceServiceTest {
     @Test
     void createPatientInsurance_withUserServiceCommunicationError() {
         //Arrange
-        PatientInsuranceCreateDto createDto = new PatientInsuranceCreateDto("30345678", "CRED-003-1234", 201L, 21L);
+        PatientInsuranceCreateDto createDto = new PatientInsuranceCreateDto("30345678", 201L, 21L);
 
         when(userServiceApi.getPatientByDni("30345678")).thenThrow(feign.FeignException.InternalServerError.class);
 

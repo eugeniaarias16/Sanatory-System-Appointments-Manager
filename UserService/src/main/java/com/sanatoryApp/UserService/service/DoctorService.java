@@ -198,7 +198,7 @@ public class DoctorService implements IDoctorService{
     public void disableDoctorByDni(String dni){
         log.debug("Attempting to disabled Doctor with dni {}",dni);
         if (!doctorRepository.existsByDni(dni)) {
-            throw new RuntimeException("Doctor with DNI " + dni + " not found");
+            throw new ResourceNotFound("Doctor with DNI " + dni + " not found");
         }
         doctorRepository.disableDoctorByDni(dni);
         log.info("Doctor {} {} with dni {} successfully disabled.",dni);

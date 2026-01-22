@@ -70,7 +70,7 @@ public class DoctorController {
     /* =================== POST ENDPOINTS =================== */
     
     @Operation(summary = "Create a new Doctor")
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<DoctorResponseDto>createDoctor(@Valid @RequestBody DoctorCreateDto dto){
         DoctorResponseDto doctor=doctorService.createDoctor(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(doctor);
@@ -92,7 +92,7 @@ public class DoctorController {
     @PatchMapping("/disable/{dni}")
     public ResponseEntity<String>disableDoctorByDni(@PathVariable String dni){
         doctorService.disableDoctorByDni(dni);
-        return ResponseEntity.ok("Doctor with dni "+" successfully disabled.");
+        return ResponseEntity.ok("Doctor with dni "+dni+" successfully disabled.");
     }
 
     
@@ -100,13 +100,13 @@ public class DoctorController {
     @PatchMapping("/enable/{dni}")
     public ResponseEntity<String>enableDoctorByDni(@PathVariable String dni){
         doctorService.enableDoctorByDni(dni);
-        return ResponseEntity.ok("Doctor with dni "+" successfully enabled.");
+        return ResponseEntity.ok("Doctor with dni "+dni+" successfully enabled.");
     }
 
     /* =================== DELETE ENDPOINTS =================== */
     
     @Operation(summary = "Delete Doctor by id")
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteDoctorById(@PathVariable Long id){
         doctorService.deleteDoctorById(id);
         return ResponseEntity.ok("Doctor with id "+id+"successfully deleted.");

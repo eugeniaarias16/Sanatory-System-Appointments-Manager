@@ -17,9 +17,9 @@ public record PatientInsuranceCreateDto(
         @Schema(description = "Patient's national identification number", example = "12345678")
         String patientDni,
 
-        @NotBlank(message = "Credential number is mandatory.")
+   /*     @NotBlank(message = "Credential number is mandatory.")
         @Schema(description = "Insurance credential number", example = "CRED-2024-001")
-        String credentialNumber,
+        String credentialNumber,*/
 
         @NotNull(message = "Patient's health insurance ID is mandatory.")
         @Schema(description = "Health insurance company identifier")
@@ -30,6 +30,9 @@ public record PatientInsuranceCreateDto(
         Long coveragePlanId
 ) {
     public PatientInsurance toEntity(HealthInsurance healthInsurance, CoveragePlan coveragePlan) {
+
+        String credentialNumber= "CRED-0" + healthInsurance.getId() + "-"+patientDni.substring(patientDni.length()-4);
+
         PatientInsurance patientInsurance = new PatientInsurance();
         patientInsurance.setPatientDni(patientDni);
         patientInsurance.setCredentialNumber(credentialNumber);

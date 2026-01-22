@@ -73,7 +73,7 @@ public class PatientInsuranceController {
     }
 
     @Operation(summary = "Create a new Patient Insurance")
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<PatientInsuranceCreateResponseDto> createPatientInsurance(@RequestBody @Valid PatientInsuranceCreateDto dto) {
         return ResponseEntity.ok(patientInsuranceService.createPatientInsurance(dto));
     }
@@ -100,7 +100,7 @@ public class PatientInsuranceController {
     }
 
     @Operation(summary = "Delete Patient Insurance by id")
-    @DeleteMapping("/delete/{patientInsuranceId}")
+    @DeleteMapping("/{patientInsuranceId}")
     public ResponseEntity<String> deletePatientInsuranceById(@PathVariable Long patientInsuranceId) {
         patientInsuranceService.deletePatientInsuranceById(patientInsuranceId);
         return ResponseEntity.ok("Patient Insurance with id " + patientInsuranceId + " successfully deleted.");

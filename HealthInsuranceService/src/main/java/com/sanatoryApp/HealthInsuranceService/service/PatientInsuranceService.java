@@ -7,6 +7,7 @@ import com.sanatoryApp.HealthInsuranceService.dto.Response.PatientInsuranceRespo
 import com.sanatoryApp.HealthInsuranceService.entity.CoveragePlan;
 import com.sanatoryApp.HealthInsuranceService.entity.HealthInsurance;
 import com.sanatoryApp.HealthInsuranceService.entity.PatientInsurance;
+import com.sanatoryApp.HealthInsuranceService.exception.DuplicateResourceException;
 import com.sanatoryApp.HealthInsuranceService.exception.ResourceNotFound;
 import com.sanatoryApp.HealthInsuranceService.repository.IPatientInsuranceRepository;
 import com.sanatoryApp.HealthInsuranceService.repository.UserServiceApi;
@@ -59,9 +60,20 @@ public class PatientInsuranceService implements IPatientInsuranceService {
             throw new RuntimeException("Error communicating with User Service: " + e.getMessage(), e);
         }
 
-        HealthInsurance healthInsurance=healthInsuranceService.getHealthInsuranceById(dto.healthInsuranceId());
+        HealthInsurance healthInsurance;
 
-        CoveragePlan coveragePlan=coveragePlanService.getCoveragePlanById(dto.coveragePlanId());
+        try {
+            healthInsurance=healthInsuranceService.getHealthInsuranceById(dto.healthInsuranceId());
+        }catch (ResourceNotFound e){
+            throw new ResourceNotFound("Health Insurance not found with id: "+dto.healthInsuranceId());
+        }
+
+        CoveragePlan coveragePlan;
+        try {
+            coveragePlan=coveragePlanService.getCoveragePlanById(dto.coveragePlanId());
+        }catch (ResourceNotFound e){
+            throw new ResourceNotFound("Coverage Plan not found with id: "+dto.coveragePlanId());
+        }
 
         if (!coveragePlanService.existsByIdAndHealthInsuranceId(dto.coveragePlanId(), dto.healthInsuranceId())) {
             throw new IllegalArgumentException("No coverage Plan found with id: " + dto.coveragePlanId() +
@@ -69,6 +81,13 @@ public class PatientInsuranceService implements IPatientInsuranceService {
         }
 
         PatientInsurance patientInsurance = dto.toEntity(healthInsurance,coveragePlan);
+
+        //verify if patient insurance already exists with credential number
+        if(existsByCredentialNumber(patientInsurance.getCredentialNumber())){
+            throw new DuplicateResourceException("Patient Insurance already exists with Credential Number: "+patientInsurance.getCredentialNumber());
+        }
+
+
         PatientInsurance saved = patientInsuranceRepository.save(patientInsurance);
         log.info("Patient Insurance with id {} successfully created", saved.getId());
 

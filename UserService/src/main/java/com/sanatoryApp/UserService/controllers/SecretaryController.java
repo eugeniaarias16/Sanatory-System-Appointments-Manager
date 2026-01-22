@@ -61,7 +61,7 @@ public class SecretaryController {
     /* =================== POST ENDPOINTS =================== */
 
     @Operation(summary ="Create secretary" ,description ="Create a new Secretary" )
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<SecretaryResponseDto>createSecretary(@Valid @RequestBody SecretaryCreateDto dto){
         SecretaryResponseDto responseDto=secretaryService.createSecretary(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
@@ -70,7 +70,7 @@ public class SecretaryController {
     /* =================== PUT/PATCH ENDPOINTS =================== */
 
     @Operation(summary ="Update Secretary by id" ,description ="Update Secretary's data by id" )
-    @PutMapping("/update/id/{id}")
+    @PatchMapping("/update/id/{id}")
     public ResponseEntity<SecretaryResponseDto>updateSecretaryById(@PathVariable Long id,
                                                                    @Valid @RequestBody SecretaryUpdateDto dto){
         SecretaryResponseDto responseDto=secretaryService.updateSecretaryById(id,dto);
@@ -78,7 +78,7 @@ public class SecretaryController {
     }
 
     @Operation(summary ="Update Secretary by dni" ,description ="Update Secretary's data by dni" )
-    @PutMapping("/update/dni/{dni}")
+    @PatchMapping("/update/dni/{dni}")
     public ResponseEntity<SecretaryResponseDto>updateSecretaryByDni(@PathVariable String dni,
                                                                     @Valid @RequestBody SecretaryUpdateDto dto){
         SecretaryResponseDto responseDto=secretaryService.updateSecretaryByDni(dni,dto);
@@ -104,16 +104,17 @@ public class SecretaryController {
 
     @Operation(summary ="Delete Secretary by id" )
     @DeleteMapping("/delete/id/{id}")
-    public ResponseEntity<Void>deleteSecretaryById(@PathVariable Long id){
+    public ResponseEntity<String>deleteSecretaryById(@PathVariable Long id){
         secretaryService.deleteSecretaryById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Secretary with id "+id+" successfully deleted.");
     }
 
     @Operation(summary ="Delete Secretary by dni" )
     @DeleteMapping("/delete/dni/{dni}")
-    public ResponseEntity<Void>deleteSecretaryByDni(@PathVariable String dni){
+    public ResponseEntity<String>deleteSecretaryByDni(@PathVariable String dni){
         secretaryService.deleteSecretaryByDni(dni);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Secretary with dni "+dni+" successfully deleted.");
+
     }
 
 }

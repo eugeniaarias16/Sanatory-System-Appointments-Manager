@@ -56,7 +56,7 @@ public class PatientController {
 
     /* =================== POST ENDPOINTS =================== */
     @Operation(summary = "Create a new Patient")
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<PatientResponseDto>createPatient(@Valid @RequestBody PatientCreateDto dto){
         PatientResponseDto responseDto=patientService.createPatient(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
@@ -97,15 +97,16 @@ public class PatientController {
     /* =================== DELETE ENDPOINTS =================== */
     @Operation(summary = "Delete Patient by id")
     @DeleteMapping("/delete/id/{id}")
-    public ResponseEntity<Void>deletePatientById(@PathVariable Long id){
+    public ResponseEntity<String>deletePatientById(@PathVariable Long id){
         patientService.deletePatientById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Patient with id "+id+" successfully deleted.");
     }
 
     @Operation(summary = "Delete Patient by dni")
     @DeleteMapping("/delete/dni/{dni}")
-    public ResponseEntity<Void>deletePatientByDni(@PathVariable String dni){
+    public ResponseEntity<String>deletePatientByDni(@PathVariable String dni){
         patientService.deletePatientByDni(dni);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Patient with dni "+dni+" successfully deleted.");
+
     }
 }

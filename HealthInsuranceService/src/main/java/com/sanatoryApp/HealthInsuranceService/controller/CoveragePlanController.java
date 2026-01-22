@@ -30,7 +30,7 @@ public class CoveragePlanController {
     }
 
     @Operation(summary = "Create a new Coverage Plan")
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<CoveragePlanResponseDto> createCoveragePlan(
             @Valid @RequestBody CoveragePlanCreateDto dto
     ) {
@@ -54,7 +54,7 @@ public class CoveragePlanController {
     }
 
     @Operation(summary = "Delete Coverage Plan by Id")
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCoveragePlanById(@PathVariable Long id) {
         coveragePlanService.deleteCoveragePlanById(id);
         return ResponseEntity.ok("Coverage Plan with id: " + id + " successfully deleted");

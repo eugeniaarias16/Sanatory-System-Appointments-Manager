@@ -190,7 +190,7 @@ public class SecretaryService implements ISecretaryService{
     public SecretaryResponseDto findSecretaryByEmail(String email) {
         log.debug("Searching Secretary by email : {}",email);
         Secretary secretary=secretaryRepository.findSecretaryByEmail(email)
-                .orElseThrow(()->new ResourceNotFound("Secretary not found with email:"+email));
+                .orElseThrow(()->new ResourceNotFound("Secretary not found with email: "+email));
         return SecretaryResponseDto.fromEntity(secretary);
     }
 
