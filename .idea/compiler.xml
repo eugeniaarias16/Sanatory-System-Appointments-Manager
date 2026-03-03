@@ -38,7 +38,7 @@
         </processorPath>
         <module name="eureka-server" />
       </profile>
-      <profile name="Annotation profile for HealthInsuranceService" enabled="true">
+      <profile name="Annotation profile for AppointmentService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -47,8 +47,8 @@
         </processorPath>
         <module name="HealthInsuranceService" />
         <module name="UserService" />
-        <module name="CalendarService" />
         <module name="AppointmentService" />
+        <module name="CalendarService" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

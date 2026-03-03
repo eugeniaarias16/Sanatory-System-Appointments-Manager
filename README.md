@@ -610,14 +610,17 @@ HealthInsurance (1) ──┬──► (N) CoveragePlan
 ```java
 {
   "id": Long,
-  "doctorCalendar": DoctorCalendar,         // @ManyToOne
-  "date": LocalDate (@FutureOrPresent),
-  "startTime": LocalTime,
-  "endTime": LocalTime,
-  "exceptionType": ExceptionType,            // UNAVAILABLE, VACATION, etc.
+  "doctorCalendar": DoctorCalendar,         // @ManyToOne (null for GLOBAL/SEMI_GLOBAL)
+  "doctorId": Long,                          // null for GLOBAL, required for SEMI_GLOBAL/SPECIFIC
+  "scope": ExceptionScope,                   // GLOBAL, SEMI_GLOBAL, SPECIFIC
+  "startDate": LocalDate (@Future),
+  "endDate": LocalDate,                      // null = single-day exception
+  "startTime": LocalTime,                    // null = full-day exception
+  "endTime": LocalTime,                      // null = full-day exception
+  "exceptionType": ExceptionType,            // UNAVAILABLE, VACATION, HOLIDAY, etc.
   "reason": String,
-  "isGlobal": boolean,
-  "isFullDay": boolean,
+  "isFullDay": boolean,                      // auto-calculated
+  "isSingleDay": boolean,                    // auto-calculated
   "isActive": boolean
 }
 ```
@@ -918,12 +921,14 @@ Content-Type: application/json
 | GET | `/appointment/{id}` | Obtiene cita por ID | SECRETARY |
 | GET | `/appointment/patient/{patientId}` | Obtiene citas de un paciente | SECRETARY o el mismo PATIENT |
 | GET | `/appointment/patient/dni/{patientDni}` | Obtiene citas por DNI del paciente | SECRETARY |
-| GET | `/appointment/patient/search-by-date?patientId={id}&date={date}` | Busca citas por fecha | SECRETARY o el mismo PATIENT |
-| GET | `/appointment/patient/id/{patientId}/search-date-range?startDate={start}&endDate={end}` | Citas en rango de fechas | SECRETARY o el mismo PATIENT |
-| GET | `/appointment/patient/id/{patientId}/upcoming?date={date}` | Citas futuras del paciente | SECRETARY o el mismo PATIENT |
+| GET | `/appointment/patient/dni/{patientDni}/search-date-range?startDate={start}&endDate={end}` | Citas del paciente en rango de fechas | SECRETARY |
+| GET | `/appointment/patient/id/{patientId}/upcoming?date={date}` | Citas futuras del paciente (date opcional, default: hoy) | SECRETARY o el mismo PATIENT |
+| GET | `/appointment/patient/dni/{patientDni}/upcoming?date={date}` | Citas futuras por DNI (date opcional, default: hoy) | SECRETARY |
 | GET | `/appointment/doctor/{doctorId}` | Obtiene citas de un doctor | SECRETARY o el mismo DOCTOR |
 | GET | `/appointment/doctor/{doctorId}/search-date-range?startDate={start}&endDate={end}` | Citas del doctor en rango | SECRETARY o el mismo DOCTOR |
+| GET | `/appointment/doctor/doctorCalendar/{doctorCalendarId}` | Citas por ID de calendario | SECRETARY |
 | GET | `/appointment/doctor/{doctorId}/today` | Citas de hoy del doctor | SECRETARY o el mismo DOCTOR |
+| GET | `/appointment/search-specific?patientId={id}&doctorId={id}&date={date}` | Cita específica por paciente, doctor y fecha | SECRETARY |
 | POST | `/appointment/create` | Crea una nueva cita | SECRETARY |
 | PATCH | `/appointment/cancel/{id}` | Cancela cita por ID | SECRETARY |
 
@@ -935,27 +940,34 @@ Content-Type: application/json
 
 {
   "doctorId": 1,
-  "doctorCalendarId": 1,
-  "patientId": 2,
+  "patientDni": "12345678",
   "appointmentTypeId": 1,
-  "patientInsuranceId": 1,
-  "date": "2025-12-15T10:00:00",
+  "credentialNumber": "OS-001-2025",
+  "doctorCalendarId": 1,
+  "date": "2025-12-15",
+  "time": "10:00:00",
   "notes": "Control mensual"
 }
 
-Response 201:
+Response 200:
 {
   "id": 1,
   "doctorId": 1,
-  "doctorName": "Juan Pérez",
+  "doctorFirstName": "Juan",
+  "doctorLastName": "Pérez",
   "patientId": 2,
-  "patientName": "María González",
-  "appointmentType": "Consulta General",
+  "patientFirstName": "María",
+  "patientLastName": "González",
+  "patientDni": "12345678",
+  "appointmentTypeName": "Consulta General",
+  "patientInsuranceId": 3,
   "date": "2025-12-15T10:00:00",
   "status": "SCHEDULED",
   "consultationCost": 5000.00,
   "coveragePercentage": 70.00,
-  "amountToPay": 1500.00
+  "amountToPay": 1500.00,
+  "notes": "Control mensual",
+  "createdAt": "2025-12-15"
 }
 ```
 
@@ -965,13 +977,13 @@ Response 201:
 
 | Método | Endpoint | Descripción | Seguridad |
 |--------|----------|-------------|----------|
-| GET | `/appointmentTypes/{id}` | Obtiene tipo de cita por ID | Público |
-| GET | `/appointmentTypes/name/{name}` | Obtiene tipo por nombre | Público |
-| GET | `/appointmentTypes/search/name?name={name}` | Busca tipos por nombre (LIKE) | Público |
-| GET | `/appointmentTypes/search/price-range?minPrice={min}&maxPrice={max}` | Busca por rango de precio | Público |
-| POST | `/appointmentTypes` | Crea nuevo tipo de cita | Público |
-| PATCH | `/appointmentTypes/{id}` | Actualiza tipo de cita | Público |
-| DELETE | `/appointmentTypes/{id}` | Elimina tipo de cita | Público |
+| GET | `/appointmentTypes/{id}` | Obtiene tipo de cita por ID | Autenticado |
+| GET | `/appointmentTypes/name/{name}` | Obtiene tipo por nombre | Autenticado |
+| GET | `/appointmentTypes/search/name?name={name}` | Busca tipos por nombre (LIKE) | Autenticado |
+| GET | `/appointmentTypes/search/price-range?minPrice={min}&maxPrice={max}` | Busca por rango de precio | Autenticado |
+| POST | `/appointmentTypes` | Crea nuevo tipo de cita | Autenticado |
+| PATCH | `/appointmentTypes/{id}` | Actualiza tipo de cita | Autenticado |
+| DELETE | `/appointmentTypes/{id}` | Elimina tipo de cita | Autenticado |
 
 **Ejemplo - Crear Tipo de Cita**:
 ```http
@@ -1048,32 +1060,81 @@ Content-Type: application/json
 
 #### Calendar Exceptions
 
+Las excepciones de calendario tienen 3 niveles de alcance (**scope**):
+- **GLOBAL**: Aplica a todos los doctores y calendarios (ej: feriado nacional)
+- **SEMI_GLOBAL**: Aplica a todos los calendarios de un doctor específico (ej: vacaciones del doctor)
+- **SPECIFIC**: Aplica solo a un calendario específico (ej: mantenimiento de consultorio)
+
 | Método | Endpoint | Descripción | Seguridad |
 |--------|----------|-------------|----------|
-| GET | `/calendarException/{id}` | Obtiene excepción por ID | SECRETARY |
-| GET | `/calendarException/doctorCalendar/{doctorCalendarId}` | Excepciones por calendario | SECRETARY |
-| GET | `/calendarException/search/calendar-date?calendarId={id}&doctorId={id}&date={date}` | Excepciones aplicables en fecha | SECRETARY |
-| GET | `/calendarException/global/doctor/{doctorId}` | Excepciones globales del doctor | SECRETARY |
-| GET | `/calendarException/search/future?calendarId={id}&currentDate={date}` | Excepciones futuras | SECRETARY |
+| GET | `/calendarException/{id}` | Obtiene excepción activa por ID | SECRETARY |
+| GET | `/calendarException/doctor/{doctorId}` | Todas las excepciones de un doctor (GLOBAL + SEMI_GLOBAL + SPECIFIC) | SECRETARY |
+| GET | `/calendarException/global` | Todas las excepciones GLOBAL activas | SECRETARY |
+| GET | `/calendarException/semi-global/doctor/{doctorId}` | Excepciones SEMI_GLOBAL activas por doctor | SECRETARY |
+| GET | `/calendarException/specific/doctorCalendar/{doctorCalendarId}` | Excepciones SPECIFIC activas por calendario | SECRETARY |
+| GET | `/calendarException/doctor/{doctorId}/date/{date}` | Excepciones aplicables a un doctor en una fecha | SECRETARY |
 | POST | `/calendarException` | Crea nueva excepción | SECRETARY |
-| PATCH | `/calendarException/{id}` | Actualiza excepción | SECRETARY |
+| PATCH | `/calendarException/{id}` | Actualiza excepción (PATCH parcial con JsonNullable) | SECRETARY |
 | DELETE | `/calendarException/{id}` | Elimina excepción | SECRETARY |
 
-**Ejemplo - Crear Excepción (Vacaciones)**:
+**Ejemplo - Crear Excepción GLOBAL (Feriado)**:
 ```http
 POST /calendarException
 Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "doctorCalendarId": 1,
-  "date": "2025-12-25",
+  "scope": "GLOBAL",
+  "startDate": "2026-12-25",
   "exceptionType": "HOLIDAY",
-  "reason": "Navidad",
-  "isGlobal": true,
-  "isFullDay": true
+  "reason": "Navidad"
 }
 ```
+
+**Ejemplo - Crear Excepción SEMI_GLOBAL (Vacaciones del doctor)**:
+```http
+POST /calendarException
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "scope": "SEMI_GLOBAL",
+  "doctorId": 1,
+  "startDate": "2026-01-15",
+  "endDate": "2026-01-30",
+  "exceptionType": "VACATION"
+}
+```
+
+**Ejemplo - Crear Excepción SPECIFIC (Ausencia parcial en un consultorio)**:
+```http
+POST /calendarException
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "scope": "SPECIFIC",
+  "doctorCalendarId": 1,
+  "startDate": "2026-03-10",
+  "startTime": "08:00:00",
+  "endTime": "12:00:00",
+  "exceptionType": "CONFERENCE",
+  "reason": "Congreso de cardiología"
+}
+```
+
+**Ejemplo - Actualizar Excepción (PATCH parcial)**:
+```http
+PATCH /calendarException/1
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "reason": "Congreso internacional de cardiología",
+  "endDate": "2026-03-11"
+}
+```
+Solo se modifican los campos enviados. Enviar un campo como `null` lo setea a null (ej: `"endDate": null` convierte a excepción de un solo día).
 
 ---
 
@@ -1499,18 +1560,30 @@ curl -X GET "http://localhost:8080/appointment/doctor/1/search-date-range?startD
   -H "Authorization: Bearer $TOKEN"
 ```
 
-#### 9. Agregar Excepción al Calendario (Vacaciones)
+#### 9. Agregar Excepción al Calendario (Feriado Global)
 ```bash
 curl -X POST http://localhost:8080/calendarException \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "doctorCalendarId": 1,
-    "date": "2025-12-25",
+    "scope": "GLOBAL",
+    "startDate": "2026-12-25",
     "exceptionType": "HOLIDAY",
-    "reason": "Navidad",
-    "isGlobal": true,
-    "isFullDay": true
+    "reason": "Navidad"
+  }'
+```
+
+#### 10. Agregar Vacaciones del Doctor (SEMI_GLOBAL)
+```bash
+curl -X POST http://localhost:8080/calendarException \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scope": "SEMI_GLOBAL",
+    "doctorId": 1,
+    "startDate": "2026-01-15",
+    "endDate": "2026-01-30",
+    "exceptionType": "VACATION"
   }'
 ```
 

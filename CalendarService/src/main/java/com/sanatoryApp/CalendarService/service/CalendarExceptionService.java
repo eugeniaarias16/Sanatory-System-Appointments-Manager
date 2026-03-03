@@ -5,20 +5,26 @@ import com.sanatoryApp.CalendarService.dto.Request.CalendarExceptionUpdateDto;
 import com.sanatoryApp.CalendarService.dto.Response.CalendarExceptionResponseDto;
 import com.sanatoryApp.CalendarService.entity.CalendarException;
 import com.sanatoryApp.CalendarService.entity.DoctorCalendar;
+import com.sanatoryApp.CalendarService.entity.ExceptionScope;
 import com.sanatoryApp.CalendarService.entity.ExceptionType;
+import com.sanatoryApp.CalendarService.exception.BadRequest;
 import com.sanatoryApp.CalendarService.exception.ResourceNotFound;
 import com.sanatoryApp.CalendarService.repository.ICalendarExceptionRepository;
+import com.sanatoryApp.CalendarService.repository.UserServiceApi;
 import com.sanatoryApp.CalendarService.utils.TimeConstants;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
-import static com.sanatoryApp.CalendarService.utils.TimeValidationUtils.isFullDayRange;
-import static com.sanatoryApp.CalendarService.utils.TimeValidationUtils.validateTimeRange;
+import static com.sanatoryApp.CalendarService.utils.TimeValidationUtils.*;
+import static com.sanatoryApp.CalendarService.utils.ValidateDtoFields.*;
 
 @Service
 @Slf4j
@@ -27,243 +33,305 @@ import static com.sanatoryApp.CalendarService.utils.TimeValidationUtils.validate
 public class CalendarExceptionService implements ICalendarExceptionService {
 
     private final ICalendarExceptionRepository calendarExceptionRepository;
-    private final DoctorCalendarService doctorCalendarService;
-
-    @Override
-    public CalendarExceptionResponseDto findById(Long id) {
-        CalendarException calendarException = calendarExceptionRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new ResourceNotFound("No calendar exception found with id " + id));
-        return CalendarExceptionResponseDto.fromEntity(calendarException);
-    }
+    private final IDoctorCalendarService doctorCalendarService;
+    private final UserServiceApi userServiceApi;
 
     @Override
     @Transactional
     public CalendarExceptionResponseDto createCalendarException(CalendarExceptionCreateDto dto) {
-        validateTimeRange(dto.getStartTime(), dto.getEndTime());
+        /* Validates that the provided fields are consistent with the scope */
+        validateScopeConsistency(dto.scope(), dto.doctorId(), dto.doctorCalendarId());
 
-        DoctorCalendar doctorCalendar =doctorCalendarService.getDoctorCalendarEntityById(dto.getDoctorCalendarId());
+        //Validate that endTime is after startTime
+        validateTimeRange(dto.startTime(), dto.endTime());
 
-        validateFutureDate(dto.getDate());
+        //validate Range Date endDate
+        if (dto.endDate() != null) {
+            validateDateRange(dto.startDate(), dto.endDate());
+        }
 
-        validateExceptionTypeAndReason(dto.getExceptionType(), dto.getReason());
+        //validate ExceptionType and Reason
+        validateExceptionTypeAndReason(dto.exceptionType(), dto.reason());
 
-        validateNoConflictException(dto.getDoctorCalendarId(), dto.getDate(), 0L);
 
-        CalendarException calendarException = dto.toEntity(doctorCalendar);
+        //validate if Doctor exists by id
+        if (dto.scope() == ExceptionScope.SEMI_GLOBAL) {
+            validateDoctorId(dto.doctorId());
+        }
 
-        if (isFullDayRange(dto.getStartTime(), dto.getEndTime())) {
-            log.info("Creating full-day exception for {}", dto.getDate());
+        //verify if exists conflict creating calendar exception
+        List<CalendarExceptionResponseDto> conflicts = findExistingCalendarExceptionCoincidence(
+                dto.doctorId(),
+                dto.doctorCalendarId(),
+                dto.startDate(),
+                dto.endDate(),
+                0L
+        );
+
+        if (!conflicts.isEmpty()) {
+            String errorMsg = buildConflictErrorMessage(conflicts);
+            throw new BadRequest(errorMsg);
+        }
+
+        //create Calendar Exception Entity
+        CalendarException calendarException = dto.toEntity();
+
+        //Get DoctorCalendar if scope is SPECIFIC
+        if (dto.scope() == ExceptionScope.SPECIFIC) {
+            DoctorCalendar doctorCalendar = doctorCalendarService.getDoctorCalendarEntityById(dto.doctorCalendarId());
+            calendarException.setDoctorCalendar(doctorCalendar);
+            calendarException.setDoctorId(doctorCalendar.getDoctorId());
+
+        }
+
+
+        //verify if is FullDay
+        if (isFullDayRange(dto.startTime(), dto.endTime())) {
+            log.info("Creating full-day exception for {}", dto.startDate());
+            calendarException.setFullDay(true);
             calendarException.setStartTime(TimeConstants.START_OF_DAY);
             calendarException.setEndTime(TimeConstants.END_OF_DAY);
-            calendarException.setFullDay(true);
         } else {
-            log.info("Creating partial-day exception for {} from {} to {}",
-                    dto.getDate(), dto.getStartTime(), dto.getEndTime());
+            log.info("Creating partial-day exception from day {} at {}hs to day{} at {}hs",
+                    dto.startDate(), dto.startTime(), dto.endDate(), dto.endTime());
             calendarException.setFullDay(false);
         }
 
-        CalendarException saved = calendarExceptionRepository.save(calendarException);
-        log.info("Calendar exception created with id: {} - Type: {}",
-                saved.getId(), saved.getExceptionType());
 
-        return CalendarExceptionResponseDto.fromEntity(saved);
+        CalendarException savedCE = calendarExceptionRepository.save(calendarException);
+
+        log.info("Calendar Exception successfully created -SCOPE:{} ID:{}, Type:{}, Date:{} to {}.",
+                savedCE.getScope(),
+                savedCE.getId(),
+                savedCE.getExceptionType(),
+                savedCE.getStartDate(),
+                savedCE.getEndDate() != null ? savedCE.getEndDate() : savedCE.getStartDate());
+        return CalendarExceptionResponseDto.fromEntity(savedCE);
     }
+
 
     @Override
     @Transactional
     public CalendarExceptionResponseDto updateCalendarException(Long id, CalendarExceptionUpdateDto dto) {
-        CalendarException existingCalendarException = calendarExceptionRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new ResourceNotFound("No calendar exception found with id " + id));
+        CalendarException existingCE = calendarExceptionRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFound("Calendar exception with id " + id + " not found."));
 
-        if (dto.doctorCalendarId() != null) {
-            DoctorCalendar doctorCalendar =doctorCalendarService.getDoctorCalendarEntityById(dto.doctorCalendarId());
-            existingCalendarException.setDoctorCalendar(doctorCalendar);
+
+
+        /* COMPUTE EFFECTIVE VALUES
+         * if dto field is present (value or null) the effective value would be  field's data,
+         * if the dto field is empty, the effective value is that of the entity existing in the BD.
+         */
+        LocalDate efStartDate = getEffectiveValue(dto.getStartDate(), existingCE.getStartDate());
+        LocalDate efEndDate = getEffectiveValue(dto.getEndDate(), existingCE.getEndDate());
+        LocalTime efStartTime = getEffectiveValue(dto.getStartTime(), existingCE.getStartTime());
+        LocalTime efEndTime = getEffectiveValue(dto.getEndTime(), existingCE.getEndTime());
+        ExceptionType efExceptionType = getEffectiveValue(dto.getExceptionType(), existingCE.getExceptionType());
+        ExceptionScope efScope = getEffectiveValue(dto.getScope(), existingCE.getScope());
+        String efReason = getEffectiveValue(dto.getReason(), existingCE.getReason());
+
+
+        // validate non-nullable fields
+        if (efStartDate == null) {
+            throw new IllegalArgumentException("startDate cannot be set to null");
+        }
+        if (efExceptionType == null) {
+            throw new IllegalArgumentException("exceptionType cannot be set to null");
+        }
+        if (efScope == null) {
+            throw new IllegalArgumentException("scope cannot be set to null");
         }
 
-        if (dto.date() != null) {
-            validateFutureDate(dto.date());
+        //validate time range, date range, and exceptionType + reason
+        validateTimeRange(efStartTime, efEndTime);
+        if (efEndDate != null) {
+            validateDateRange(efStartDate, efEndDate);
+        }
+        validateExceptionTypeAndReason(efExceptionType, efReason);
 
-            Long calendarIdToValidate =existingCalendarException.getDoctorCalendar().getId();
 
-            validateNoConflictException(calendarIdToValidate, dto.date(), id);
-            existingCalendarException.setDate(dto.date());
+        //resolve scope-dependent fields(doctorId, doctorCalendarId)
+        Long efDoctorId;
+        Long efDoctorCalendarId;
+        DoctorCalendar efDoctorCalendar = null;
+
+        switch (efScope) {
+            case GLOBAL:
+                efDoctorId = null;
+                efDoctorCalendarId = null;
+                break;
+            case SEMI_GLOBAL:
+                efDoctorId = getEffectiveValue(dto.getDoctorId(), existingCE.getDoctorId());
+                validateDoctorId(efDoctorId);
+                efDoctorCalendarId = null;
+                break;
+            case SPECIFIC:
+                efDoctorCalendarId = getEffectiveValue(
+                        dto.getDoctorCalendarId(),
+                        existingCE.getDoctorCalendar() != null ? existingCE.getDoctorCalendar().getId() : null);
+                efDoctorCalendar = doctorCalendarService.getDoctorCalendarEntityById(efDoctorCalendarId);
+
+
+                efDoctorId = efDoctorCalendar.getDoctorId();
+                if (dto.getDoctorId().isPresent() && dto.getDoctorId().get() != null) {
+                    if (!efDoctorId.equals(dto.getDoctorId().get())) {
+                        throw new IllegalArgumentException("The Doctor ID provided does not correspond to the Doctor Calendar ID.");
+                    }
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown scope: " + efScope);
         }
 
-        if (dto.exceptionType() != null) {
-            validateExceptionTypeAndReason(
-                    dto.exceptionType(),
-                    dto.reason() != null ? dto.reason() : existingCalendarException.getReason()
-            );
-            existingCalendarException.setExceptionType(dto.exceptionType());
+        // Check conflicts using effective values (exclude current CE by id)
+        List<CalendarExceptionResponseDto> conflicts = findExistingCalendarExceptionCoincidence(efDoctorId, efDoctorCalendarId, efStartDate, efEndDate, id);
+        if (!conflicts.isEmpty()) {
+            throw new BadRequest(buildConflictErrorMessage(conflicts));
         }
 
-        if (dto.isGlobal() != null) {
-            existingCalendarException.setGlobal(dto.isGlobal());
+
+        //Apply effective values to entity
+        existingCE.setStartDate(efStartDate);
+        existingCE.setEndDate(efEndDate);
+        existingCE.setStartTime(efStartTime);
+        existingCE.setEndTime(efEndTime);
+        existingCE.setScope(efScope);
+        existingCE.setExceptionType(efExceptionType);
+        existingCE.setDoctorId(efDoctorId);
+        existingCE.setDoctorCalendar(efDoctorCalendar);
+
+        if (efReason != null && !efReason.trim().isEmpty()) {
+            existingCE.setReason(efReason.trim().toLowerCase());
+        } else {
+            existingCE.setReason(null);
         }
 
-        boolean startTimeProvided = dto.startTime() != null;
-        boolean endTimeProvided = dto.endTime() != null;
 
-        if (startTimeProvided != endTimeProvided) {
-            throw new IllegalArgumentException(
-                    "Both startTime and endTime must be provided together, or neither should be provided"
-            );
-        }
+        //save and return
+        CalendarException savedCE = calendarExceptionRepository.save(existingCE);
+        log.info("Calendar Exception successfully updated - SCOPE:{} ID:{}, Type:{}, Date:{} to {}.",
+                savedCE.getScope(), savedCE.getId(), savedCE.getExceptionType(),
+                savedCE.getStartDate(),
+                savedCE.getEffectiveEndDate());
 
-        if (startTimeProvided && endTimeProvided) {
-            validateTimeRange(dto.startTime(), dto.endTime());
+        return CalendarExceptionResponseDto.fromEntity(savedCE);
 
-            if (isFullDayRange(dto.startTime(), dto.endTime())) {
-                log.info("Updating to full-day exception for {}", existingCalendarException.getDate());
-                existingCalendarException.setStartTime(TimeConstants.START_OF_DAY);
-                existingCalendarException.setEndTime(TimeConstants.END_OF_DAY);
-                existingCalendarException.setFullDay(true);
-            } else {
-                log.info("Updating to partial-day exception for {} from {} to {}",
-                        existingCalendarException.getDate(), dto.startTime(), dto.endTime());
-                existingCalendarException.setStartTime(dto.startTime());
-                existingCalendarException.setEndTime(dto.endTime());
-                existingCalendarException.setFullDay(false);
+    }
+
+    @Override
+    public CalendarExceptionResponseDto findByIdAndIsActive(Long id) {
+        CalendarException calendarException = calendarExceptionRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFound("Calendar exception with id " + id + " not found."));
+        return CalendarExceptionResponseDto.fromEntity(calendarException);
+    }
+
+    @Override
+    public List<CalendarExceptionResponseDto> findBydDoctorId(Long doctorId) {
+        List<CalendarException> calendarExceptions = calendarExceptionRepository.findByDoctorId(doctorId);
+        return calendarExceptions
+                .stream()
+                .map(CalendarExceptionResponseDto::fromEntity)
+                .toList();
+    }
+
+    @Override
+    public List<CalendarExceptionResponseDto> findAllGlobalAndIsActive() {
+        List<CalendarException> calendarExceptions = calendarExceptionRepository.findAllGlobalAndIsActive();
+        return calendarExceptions
+                .stream()
+                .map(CalendarExceptionResponseDto::fromEntity)
+                .toList();
+    }
+
+    @Override
+    public List<CalendarExceptionResponseDto> findSemiGlobalByDoctorIdAndIsActive(Long doctorId) {
+        List<CalendarException> calendarExceptions = calendarExceptionRepository.findSemiGlobalByDoctorIdAndIsActive(doctorId);
+        return calendarExceptions
+                .stream()
+                .map(CalendarExceptionResponseDto::fromEntity)
+                .toList();
+    }
+
+    @Override
+    public List<CalendarExceptionResponseDto> findSpecificByDoctorCalendarIdAndIsActive(Long doctorCalendarId) {
+        List<CalendarException> calendarExceptions = calendarExceptionRepository.findSpecificByDoctorCalendarIdAndIsActive(doctorCalendarId);
+        return calendarExceptions
+                .stream()
+                .map(CalendarExceptionResponseDto::fromEntity)
+                .toList();
+    }
+
+    @Override
+    public List<CalendarExceptionResponseDto> findByDoctorIdAndDateAndHour(Long doctorId, LocalDate date) {
+        List<CalendarException> calendarExceptions = calendarExceptionRepository.findByDoctorIdAndDate(doctorId, date);
+        return calendarExceptions
+                .stream()
+                .map(CalendarExceptionResponseDto::fromEntity)
+                .toList();
+    }
+
+
+    @Override
+    public List<CalendarExceptionResponseDto> findExistingCalendarExceptionCoincidence(Long doctorId, Long calendarId, LocalDate startDate, LocalDate endDate, Long excludeId) {
+
+        List<CalendarException> calendarExceptionList = calendarExceptionRepository
+                .findExistingCalendarExceptionCoincidence(doctorId, calendarId, startDate, endDate, excludeId);
+
+        return calendarExceptionList.stream()
+                .map(CalendarExceptionResponseDto::fromEntity)
+                .toList();
+    }
+
+
+    @Override
+    public void deleteCalendarExceptionById(Long id) {
+
+        log.debug("Attempting to delete Calendar Exception with id: {}", id);
+        CalendarException calendarException = calendarExceptionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFound("Calendar Exception not found with id:" + id));
+        calendarExceptionRepository.delete(calendarException);
+        log.info("Calendar Exception with id: {} successfully deleted.");
+
+    }
+
+
+    /*  HELPER METHODS */
+
+
+    private String buildConflictErrorMessage(List<CalendarExceptionResponseDto> conflicts) {
+        StringBuilder errorMsg = new StringBuilder("Schedule conflict detected. The following exception(s) already exist:\n");
+        for (CalendarExceptionResponseDto ce : conflicts) {
+            String dateRange = ce.endDate() == null ?
+                    ce.startDate().toString() :
+                    ce.startDate().toString() + " to " + ce.endDate().toString();
+
+            errorMsg.append(String.format("Scope:[%s], ID:%d, Type:%s, Date:%s", ce.scope(), ce.id(), ce.exceptionType(), dateRange));
+
+            if (ce.reason() != null) {
+                errorMsg.append(String.format(",Reason:[%s]", ce.reason()));
             }
-        }
+            errorMsg.append("\n");
 
-        if (dto.reason() != null && !dto.reason().trim().isEmpty()) {
-            existingCalendarException.setReason(dto.reason().trim().toLowerCase());
         }
-
-        CalendarException saved = calendarExceptionRepository.save(existingCalendarException);
-        log.info("Calendar Exception successfully updated with id: {} - Type: {}",
-                saved.getId(), saved.getExceptionType());
-        return CalendarExceptionResponseDto.fromEntity(saved);
+        return errorMsg.toString();
     }
 
-    @Override
-    @Transactional
-    public void deleteCalendarException(Long id) {
-        log.debug("Attempting to delete Calendar Exception with id {}", id);
-
-        CalendarException existingCalendarException = calendarExceptionRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new ResourceNotFound("No calendar exception found with id " + id));
-
-        existingCalendarException.setActive(false);
-        calendarExceptionRepository.save(existingCalendarException);
-
-        log.info("Calendar Exception with id {} successfully deactivated (soft delete)", id);
-    }
-
-    @Override
-    public List<CalendarExceptionResponseDto> findByDoctorCalendarId(Long doctorCalendarId) {
-        List<CalendarException> calendarExceptionList =
-                calendarExceptionRepository.findByDoctorCalendarId(doctorCalendarId);
-
-        if (calendarExceptionList.isEmpty()) {
-            log.info("No Calendar Exception found with Doctor Calendar id {}", doctorCalendarId);
-        }
-
-        return calendarExceptionList.stream()
-                .map(CalendarExceptionResponseDto::fromEntity)
-                .toList();
-    }
-
-    @Override
-    public List<CalendarExceptionResponseDto> findApplicableExceptionsInTimeRange(
-            Long calendarId, Long doctorId, LocalDate startTime, LocalDate endTime) {
-
-        List<CalendarException> calendarExceptionList =
-                calendarExceptionRepository.findApplicableExceptionsInTimeRange(
-                        calendarId, doctorId, startTime, endTime);
-
-        if (calendarExceptionList.isEmpty()) {
-            log.info("No Calendar Exception found with calendar id {} or doctor id {} between dates {}-{}",
-                    calendarId, doctorId, startTime, endTime);
-        }
-
-        return calendarExceptionList.stream()
-                .map(CalendarExceptionResponseDto::fromEntity)
-                .toList();
-    }
-
-    @Override
-    public List<CalendarExceptionResponseDto> findApplicableExceptionsForCalendar(
-            Long calendarId, Long doctorId, LocalDate date) {
-
-        List<CalendarException> calendarExceptionList =
-                calendarExceptionRepository.findApplicableExceptionsForCalendar(calendarId, doctorId, date);
-
-        if (calendarExceptionList.isEmpty()) {
-            log.info("No Calendar Exception found for calendar id {} and date {}", calendarId, date);
-        }
-
-        return calendarExceptionList.stream()
-                .map(CalendarExceptionResponseDto::fromEntity)
-                .toList();
-    }
-
-    @Override
-    public List<CalendarExceptionResponseDto> findGlobalExceptionsByDoctorId(Long doctorId) {
-        List<CalendarException> calendarExceptionList =
-                calendarExceptionRepository.findGlobalExceptionsByDoctorId(doctorId);
-
-        if (calendarExceptionList.isEmpty()) {
-            log.info("No Global Exception found for Doctor with id {}", doctorId);
-        }
-
-        return calendarExceptionList.stream()
-                .map(CalendarExceptionResponseDto::fromEntity)
-                .toList();
-    }
-
-    @Override
-    public List<CalendarExceptionResponseDto> findFutureExceptions(Long calendarId, LocalDate currentDate) {
-        List<CalendarException> calendarExceptionList =
-                calendarExceptionRepository.findFutureExceptions(calendarId, currentDate);
-
-        if (calendarExceptionList.isEmpty()) {
-            log.info("No future Calendar Exception found for calendar id {} with current date {}",
-                    calendarId, currentDate);
-        }
-
-        return calendarExceptionList.stream()
-                .map(CalendarExceptionResponseDto::fromEntity)
-                .toList();
-    }
-
-    private void validateNoConflictException(Long calendarId, LocalDate date, Long excludedId) {
-        log.debug("Validating no conflicting exception: calendar={}, date={}, excluded id={}",
-                calendarId, date, excludedId);
-
-        boolean hasConflict = calendarExceptionRepository.existsConflictingException(
-                calendarId, date, excludedId);
-
-        if (hasConflict) {
-            throw new IllegalArgumentException(
-                    "A conflicting exception already exists for this calendar on " + date + ". " +
-                            "Please update the existing exception instead of creating a new one."
-            );
-        }
-
-        log.debug("No conflicts found");
-    }
-
-    private void validateFutureDate(LocalDate date) {
-        log.debug("Validating future date: {}", date);
-
-        if (date.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException(
-                    "Cannot create exceptions for past dates. Date provided: " + date
-            );
+    private void validateDoctorId(Long id) {
+        try {
+            userServiceApi.getDoctorById(id);
+        } catch (FeignException feignException) {
+            throw new ResourceNotFound("Doctor with id " + id + " not found.");
         }
     }
 
-    private void validateExceptionTypeAndReason(ExceptionType exceptionType, String reason) {
-        if (exceptionType == ExceptionType.CUSTOM) {
-            if (reason == null || reason.trim().isEmpty()) {
-                throw new IllegalArgumentException(
-                        "When exception type is CUSTOM, a reason must be provided"
-                );
-            }
-        }
-
-        log.debug("Exception type {} validated successfully", exceptionType);
+    private <T> T getEffectiveValue(JsonNullable<T> dtoField, T existingValue) {
+        return dtoField.isPresent() ? dtoField.get() : existingValue;
     }
+
+
+
+
+
+
 }
+

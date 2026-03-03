@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,51 +29,42 @@ public class CalendarExceptionController {
     @Operation(summary = "Get Calendar Exception by id")
     @GetMapping("/{id}")
     public ResponseEntity<CalendarExceptionResponseDto> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(calendarExceptionService.findById(id));
+        return ResponseEntity.ok(calendarExceptionService.findByIdAndIsActive(id));
     }
 
-    @Operation(summary = "Get Calendar Exception by doctor calendar id")
-    @GetMapping("/doctorCalendar/{doctorCalendarId}")
-    public ResponseEntity<List<CalendarExceptionResponseDto>> findByDoctorCalendarId(
-            @PathVariable Long doctorCalendarId) {
-        return ResponseEntity.ok(calendarExceptionService.findByDoctorCalendarId(doctorCalendarId));
-    }
-
-    @Operation(summary = "Get Calendar Exception by range time")
-    @GetMapping("/search/time-range")
-    public ResponseEntity<List<CalendarExceptionResponseDto>> findApplicableExceptionsInTimeRange(
-            @RequestParam Long calendarId,
-            @RequestParam Long doctorId,
-            @RequestParam LocalDate startTime,
-            @RequestParam LocalDate endTime) {
-        return ResponseEntity.ok(calendarExceptionService.findApplicableExceptionsInTimeRange(
-                calendarId, doctorId, startTime, endTime));
-    }
-
-    @Operation(summary = "Find applicable calendar exceptions for a specific date")
-    @GetMapping("/search/calendar-date")
-    public ResponseEntity<List<CalendarExceptionResponseDto>> findApplicableExceptionsForCalendar(
-            @RequestParam Long calendarId,
-            @RequestParam Long doctorId,
-            @RequestParam LocalDate date) {
-        return ResponseEntity.ok(calendarExceptionService.findApplicableExceptionsForCalendar(
-                calendarId, doctorId, date));
-    }
-
-
-    @Operation(summary = "Get Global Calendar Exception by doctor id ")
-    @GetMapping("/global/doctor/{doctorId}")
-    public ResponseEntity<List<CalendarExceptionResponseDto>> findGlobalExceptionsByDoctorId(
+    @Operation(summary = "Get all Calendar Exceptions by doctor id (includes GLOBAL, SEMI_GLOBAL and SPECIFIC)")
+    @GetMapping("/doctor/{doctorId}")
+    public ResponseEntity<List<CalendarExceptionResponseDto>> findByDoctorId(
             @PathVariable Long doctorId) {
-        return ResponseEntity.ok(calendarExceptionService.findGlobalExceptionsByDoctorId(doctorId));
+        return ResponseEntity.ok(calendarExceptionService.findBydDoctorId(doctorId));
     }
 
-    @Operation(summary = "Get future Calendar Exception by calendar id")
-    @GetMapping("/search/future")
-    public ResponseEntity<List<CalendarExceptionResponseDto>> findFutureExceptions(
-            @RequestParam Long calendarId,
-            @RequestParam LocalDate currentDate) {
-        return ResponseEntity.ok(calendarExceptionService.findFutureExceptions(calendarId, currentDate));
+    @Operation(summary = "Get all active GLOBAL Calendar Exceptions")
+    @GetMapping("/global")
+    public ResponseEntity<List<CalendarExceptionResponseDto>> findAllGlobalAndIsActive() {
+        return ResponseEntity.ok(calendarExceptionService.findAllGlobalAndIsActive());
+    }
+
+    @Operation(summary = "Get all active SEMI_GLOBAL Calendar Exceptions by doctor id")
+    @GetMapping("/semi-global/doctor/{doctorId}")
+    public ResponseEntity<List<CalendarExceptionResponseDto>> findSemiGlobalByDoctorIdAndIsActive(
+            @PathVariable Long doctorId) {
+        return ResponseEntity.ok(calendarExceptionService.findSemiGlobalByDoctorIdAndIsActive(doctorId));
+    }
+
+    @Operation(summary = "Get all active SPECIFIC Calendar Exceptions by doctor calendar id")
+    @GetMapping("/specific/doctorCalendar/{doctorCalendarId}")
+    public ResponseEntity<List<CalendarExceptionResponseDto>> findSpecificByDoctorCalendarIdAndIsActive(
+            @PathVariable Long doctorCalendarId) {
+        return ResponseEntity.ok(calendarExceptionService.findSpecificByDoctorCalendarIdAndIsActive(doctorCalendarId));
+    }
+
+    @Operation(summary = "Get all Calendar Exceptions by doctor id and date")
+    @GetMapping("/doctor/{doctorId}/date/{date}")
+    public ResponseEntity<List<CalendarExceptionResponseDto>> findByDoctorIdAndDate(
+            @PathVariable Long doctorId,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(calendarExceptionService.findByDoctorIdAndDateAndHour(doctorId, date));
     }
 
     @Operation(summary = "Create a new Calendar Exception")
@@ -94,9 +86,9 @@ public class CalendarExceptionController {
 
     @Operation(summary = "Delete Calendar Exception by id")
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<Void> deleteCalendarException(@PathVariable Long id) {
-        calendarExceptionService.deleteCalendarException(id);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> deleteCalendarException(@PathVariable Long id) {
+        calendarExceptionService.deleteCalendarExceptionById(id);
+        return ResponseEntity.ok("Calendar Exception with id: " + id + " successfully deleted.");
     }
 }

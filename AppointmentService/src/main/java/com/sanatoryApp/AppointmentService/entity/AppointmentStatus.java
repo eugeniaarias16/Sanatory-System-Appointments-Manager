@@ -4,7 +4,7 @@ package com.sanatoryApp.AppointmentService.entity;
 
 public enum AppointmentStatus {
     SCHEDULED("Scheduled"),
-    CONFIRMED("Confirmed"),
+    AVAILABLE("Available"),
     CANCELLED("Cancelled"),
     COMPLETED("Completed");
 

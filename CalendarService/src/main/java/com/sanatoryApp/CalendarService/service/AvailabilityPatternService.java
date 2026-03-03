@@ -5,6 +5,7 @@ import com.sanatoryApp.CalendarService.dto.Request.AvailabilityPatternUpdateDto;
 import com.sanatoryApp.CalendarService.dto.Response.AvailabilityPatternResponseDto;
 import com.sanatoryApp.CalendarService.entity.AvailabilityPattern;
 import com.sanatoryApp.CalendarService.entity.DoctorCalendar;
+import com.sanatoryApp.CalendarService.exception.BadRequest;
 import com.sanatoryApp.CalendarService.exception.ResourceNotFound;
 import com.sanatoryApp.CalendarService.repository.IAvailabilityPatternRepository;
 import com.sanatoryApp.CalendarService.repository.IDoctorCalendarRepository;
@@ -98,17 +99,17 @@ public class AvailabilityPatternService implements IAvailabilityPatternService {
     public AvailabilityPatternResponseDto createAvailabilityPattern(AvailabilityPatternCreateDto dto) {
         log.debug("Attempting to create Availability Pattern with values: {} ", dto);
 
-        validateTimeRange(dto.getStartTime(), dto.getEndTime());
+        validateTimeRange(dto.startTime(), dto.endTime());
 
-        DoctorCalendar doctorCalendar=doctorCalendarService.getDoctorCalendarEntityById(dto.getDoctorCalendarId());
+        DoctorCalendar doctorCalendar=doctorCalendarService.getDoctorCalendarEntityById(dto.doctorCalendarId());
 
         if (availabilityPatternRepository.hasOverlappingPattern(
-                dto.getDoctorCalendarId(),
-                dto.getDayOfWeek(),
-                dto.getStartTime(),
-                dto.getEndTime(),
-                0L)) {
-            throw new IllegalArgumentException(
+                dto.doctorCalendarId(),
+                dto.dayOfWeek(),
+                dto.startTime(),
+                dto.endTime(),
+                0L)) // don't exclude anything when creating, as nothing exists
+            {throw new BadRequest(
                     "Schedule conflict: The new time slot overlaps with an existing schedule. " +
                             "The doctor cannot have overlapping schedules across any of their calendars."
             );

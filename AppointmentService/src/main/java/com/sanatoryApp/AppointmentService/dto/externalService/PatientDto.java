@@ -1,4 +1,4 @@
-package com.sanatoryApp.AppointmentService.dto.Request.externalService;
+package com.sanatoryApp.AppointmentService.dto.externalService;
 
 public record PatientDto(
         Long id,

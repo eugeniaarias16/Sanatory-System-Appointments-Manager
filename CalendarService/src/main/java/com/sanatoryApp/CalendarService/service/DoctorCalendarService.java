@@ -45,22 +45,21 @@ public class DoctorCalendarService implements IDoctorCalendarService {
     @Override
     public DoctorCalendarCreateResponseDto createDoctorCalendar(DoctorCalendarCreateDto dto) {
         log.debug("Attempting to create a new Doctor Calendar");
-        log.debug("Verifying if doctor with id {} exists.", dto.getDoctorId());
+        log.debug("Verifying if doctor with id {} exists.", dto.doctorId());
 
-        DoctorDto doctorDto = findDoctorById(dto.getDoctorId());
+        DoctorDto doctorDto = findDoctorById(dto.doctorId());
 
-        String calendarName = dto.getName().trim().toLowerCase();
+        String calendarName = dto.name().trim().toLowerCase();
 
-        if (existsByDoctorIdAndNameAndIsActiveTrue(dto.getDoctorId(), calendarName)) {
+        if (existsByDoctorIdAndNameAndIsActiveTrue(dto.doctorId(), calendarName)) {
             throw new IllegalArgumentException(
-                    "Doctor with id " + dto.getDoctorId() +
-                            " already has an active calendar with name: " + calendarName
+                    "Doctor with id " + dto.doctorId() + " already has an active calendar with name: " + dto.name()
             );
         }
 
-        TimeZoneValidator.validateTimeZone(dto.getTimeZone());
+        TimeZoneValidator.validateTimeZone(dto.timeZone());
 
-        log.debug("Creating new Doctor Calendar for the doctor with the ID {}", dto.getDoctorId());
+        log.debug("Creating new Doctor Calendar for the doctor with the ID {}", dto.doctorId());
 
         DoctorCalendar doctorCalendar = dto.toEntity();
         doctorCalendar.setName(calendarName);
@@ -68,7 +67,7 @@ public class DoctorCalendarService implements IDoctorCalendarService {
         DoctorCalendar saved = doctorCalendarRepository.save(doctorCalendar);
 
         log.info("The new Doctor Calendar {} was successfully created for the doctor with id {} and timezone {}",
-                dto.getName(), dto.getDoctorId(), dto.getTimeZone());
+                dto.name(), dto.doctorId(), dto.timeZone());
 
         return DoctorCalendarCreateResponseDto.fromEntities(saved, doctorDto);
     }

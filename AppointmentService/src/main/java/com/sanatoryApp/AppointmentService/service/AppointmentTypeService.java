@@ -34,21 +34,21 @@ public class AppointmentTypeService implements IAppointmentTypeService {
     @Override
     @Transactional
     public AppointmentTypeResponseDto createAppointmentType(AppointmentTypeCreateDto dto) {
-        log.debug("Attempting to create new Appointment Type with name {}", dto.getName());
+        log.debug("Attempting to create new Appointment Type with name {}", dto.name());
 
         // Verify if already exist Appointment Type with that name
-        if (existsAppointmentTypeByName(dto.getName())) {
-            throw new IllegalArgumentException("Appointment Type already exist with name " + dto.getName());
+        if (existsAppointmentTypeByName(dto.name())) {
+            throw new IllegalArgumentException("Appointment Type already exist with name " + dto.name());
         }
 
         // Verify duration time
-        validateDurationTime(dto.getDurationMin());
+        validateDurationTime(dto.durationMin());
 
         // Validate buffer time
-        validateBufferTime(dto.getBufferTimeMin());
+        validateBufferTime(dto.bufferTimeMin());
 
         // Validate base price
-        validateBasePrice(dto.getBasePrice());
+        validateBasePrice(dto.basePrice());
 
         AppointmentType appointmentType = dto.toEntity();
         AppointmentType saved = appointmentTypeRepository.save(appointmentType);
@@ -65,34 +65,34 @@ public class AppointmentTypeService implements IAppointmentTypeService {
         AppointmentType existingAppointmentType = appointmentTypeRepository.findByIdAndActive(id)
                 .orElseThrow(() -> new ResourceNotFound("Appointment Type not found with id " + id));
 
-        if (dto.getName() != null) {
-            if (!existingAppointmentType.getName().equals(dto.getName())) {
-                if (existsAppointmentTypeByName(dto.getName())) {
+        if (dto.name() != null) {
+            if (!existingAppointmentType.getName().equals(dto.name())) {
+                if (existsAppointmentTypeByName(dto.name())) {
                     throw new IllegalArgumentException(
-                            "Appointment Type already exists with name: " + dto.getName()
+                            "Appointment Type already exists with name: " + dto.name()
                     );
                 }
             }
-            existingAppointmentType.setName(dto.getName());
+            existingAppointmentType.setName(dto.name());
         }
 
-        if (dto.getDescription() != null) {
-            existingAppointmentType.setDescription(dto.getDescription());
+        if (dto.description() != null) {
+            existingAppointmentType.setDescription(dto.description());
         }
 
-        if (dto.getDurationMin() != null) {
-            validateDurationTime(dto.getDurationMin());
-            existingAppointmentType.setDurationMin(dto.getDurationMin());
+        if (dto.durationMin() != null) {
+            validateDurationTime(dto.durationMin());
+            existingAppointmentType.setDurationMin(dto.durationMin());
         }
 
-        if (dto.getBufferTimeMin() != null) {
-            validateBufferTime(dto.getBufferTimeMin());
-            existingAppointmentType.setBufferTimeMin(dto.getBufferTimeMin());
+        if (dto.bufferTimeMin() != null) {
+            validateBufferTime(dto.bufferTimeMin());
+            existingAppointmentType.setBufferTimeMin(dto.bufferTimeMin());
         }
 
-        if (dto.getBasePrice() != null) {
-            validateBasePrice(dto.getBasePrice());
-            existingAppointmentType.setBasePrice(dto.getBasePrice());
+        if (dto.basePrice() != null) {
+            validateBasePrice(dto.basePrice());
+            existingAppointmentType.setBasePrice(dto.basePrice());
         }
 
         AppointmentType saved = appointmentTypeRepository.save(existingAppointmentType);

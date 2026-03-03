@@ -1,7 +1,7 @@
 package com.sanatoryApp.AppointmentService.dto.Response;
 
-import com.sanatoryApp.AppointmentService.dto.Request.externalService.DoctorDto;
-import com.sanatoryApp.AppointmentService.dto.Request.externalService.PatientDto;
+import com.sanatoryApp.AppointmentService.dto.externalService.DoctorDto;
+import com.sanatoryApp.AppointmentService.dto.externalService.PatientDto;
 import com.sanatoryApp.AppointmentService.entity.Appointment;
 import com.sanatoryApp.AppointmentService.entity.AppointmentStatus;
 

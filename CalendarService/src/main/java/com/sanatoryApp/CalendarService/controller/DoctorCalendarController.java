@@ -74,9 +74,9 @@ public class DoctorCalendarController {
 
     @Operation(summary = "Delete Doctor Calendar by id")
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<Void> deleteDoctorCalendar(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> deleteDoctorCalendar(@PathVariable Long id) {
         doctorCalendarService.deleteDoctorCalendar(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Doctor Calendar with id: "+id+" successfully deleted.");
     }
 }

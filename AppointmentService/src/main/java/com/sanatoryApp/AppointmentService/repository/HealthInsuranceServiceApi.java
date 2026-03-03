@@ -1,7 +1,7 @@
 package com.sanatoryApp.AppointmentService.repository;
 
-import com.sanatoryApp.AppointmentService.dto.Request.externalService.CoveragePlanDto;
-import com.sanatoryApp.AppointmentService.dto.Request.externalService.PatientInsuranceDto;
+import com.sanatoryApp.AppointmentService.dto.externalService.CoveragePlanDto;
+import com.sanatoryApp.AppointmentService.dto.externalService.PatientInsuranceDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.GetMapping;

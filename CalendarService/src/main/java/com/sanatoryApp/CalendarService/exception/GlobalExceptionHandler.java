@@ -37,6 +37,14 @@ public class GlobalExceptionHandler {
         Map error=new HashMap<>();
         error.put("error","Invalid TimeRange Exception");
         error.put("message",ex.getMessage());
-        return new ResponseEntity<>(error,HttpStatus.CONFLICT);
+        return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String,String>>handleIllegalArgument(IllegalArgumentException ex){
+        Map error=new HashMap<>();
+        error.put("error","Bad Request");
+        error.put("message",ex.getMessage());
+        return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
     }
 }

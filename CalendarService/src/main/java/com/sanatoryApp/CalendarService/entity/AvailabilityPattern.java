@@ -19,7 +19,6 @@ public class AvailabilityPattern {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_calendar_id",nullable = false)
     private DoctorCalendar doctorCalendar;

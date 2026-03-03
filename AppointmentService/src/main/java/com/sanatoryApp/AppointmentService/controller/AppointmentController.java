@@ -8,12 +8,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.naming.ServiceUnavailableException;
+import com.sanatoryApp.AppointmentService.exception.ServiceUnavailableException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -46,31 +47,6 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.findByPatientDni(patientDni));
     }
 
-    @Operation(summary = "Get Appointment by health insurance id")
-    @GetMapping("/insurance/{insuranceId}")
-    public ResponseEntity<List<AppointmentResponseDto>> findByPatientInsuranceId(@PathVariable Long insuranceId){
-        return ResponseEntity.ok(appointmentService.findByPatientInsuranceId(insuranceId));
-    }
-
-    @Operation(summary = "Get Appointment by patient id and date")
-    @GetMapping("/patient/search-by-date")
-    @PreAuthorize("@securityService.isSecretaryOrPatient(#patientId)")
-    public ResponseEntity<List<AppointmentResponseDto>> findByPatientIdAndDate(
-            @RequestParam Long patientId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
-        return ResponseEntity.ok(appointmentService.findByPatientIdAndDate(patientId, date));
-    }
-
-    @Operation(summary = "Get Appointment by patient id and range date")
-    @GetMapping("/patient/id/{patientId}/search-date-range")
-    @PreAuthorize("@securityService.isSecretaryOrPatient(#patientId)")
-    public ResponseEntity<List<AppointmentResponseDto>> findByPatientIdAndDateBetween(
-            @PathVariable Long patientId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
-    ){
-        return ResponseEntity.ok(appointmentService.findByPatientIdAndDateBetween(patientId, startDate, endDate));
-    }
 
     @Operation(summary = "Get Appointment by patient dni and range date")
     @GetMapping("/patient/dni/{patientDni}/search-date-range")
@@ -125,6 +101,12 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.findByDoctorId(doctorId));
     }
 
+    @Operation(summary = "Get Appointments by doctor calendar id")
+    @GetMapping("/doctor/doctorCalendar/{doctorCalendarId}")
+    public ResponseEntity<List<AppointmentResponseDto>> findByDoctorCalendarId(@PathVariable Long doctorCalendarId){
+        return ResponseEntity.ok(appointmentService.findByDoctorCalendarId(doctorCalendarId));
+    }
+
     @Operation(summary = "Get Appointment by doctor id and range date")
     @GetMapping("/doctor/{doctorId}/search-date-range")
     @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
@@ -136,14 +118,7 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.findByDoctorIdAndDateBetween(doctorId, startDate, endDate));
     }
 
-    @Operation(summary = "Get Appointment by doctor calendar id and doctor id")
-    @GetMapping("/doctor/{doctorId}/search-by-calendar")
-    @PreAuthorize("@securityService.isSecretaryOrDoctor(#doctorId)")
-    public ResponseEntity<List<AppointmentResponseDto>> findByDoctorIdAndDoctorCalendarId(
-            @PathVariable Long doctorId,
-            @RequestParam Long calendarId){
-        return ResponseEntity.ok(appointmentService.findByDoctorIdAndDoctorCalendarId(doctorId, calendarId));
-    }
+
 
     @Operation(
             summary = "Get today's appointments by doctor id",
@@ -169,7 +144,7 @@ public class AppointmentController {
     @Operation(summary = "Create Appointment")
     @PostMapping("/create")
     public ResponseEntity<AppointmentCreateResponseDto> createAppointment(
-            @RequestBody AppointmentCreateDto dto) throws ServiceUnavailableException {
+            @Valid @RequestBody AppointmentCreateDto dto) throws ServiceUnavailableException {
         return ResponseEntity.ok(appointmentService.createAppointment(dto));
     }
 
@@ -180,14 +155,5 @@ public class AppointmentController {
         return ResponseEntity.ok("Appointment with id " + id + " successfully cancelled.");
     }
 
-    @Operation(summary = "Cancel Appointment by patient id, doctor id and date")
-    @PatchMapping("/cancel")
-    public ResponseEntity<String> cancelAppointmentByPatientIdAndDoctorIdAndDate(
-            @RequestParam Long patientId,
-            @RequestParam Long doctorId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
-        appointmentService.cancelAppointmentByPatientIdAndDoctorIdAndDate(patientId, doctorId, date);
-        return ResponseEntity.ok("Appointment with patient id: " + patientId +
-                ", doctor id: " + doctorId + " and date: " + date + " successfully cancelled.");
-    }
+
 }

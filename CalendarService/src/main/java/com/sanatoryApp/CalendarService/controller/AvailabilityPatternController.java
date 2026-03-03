@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -65,11 +66,11 @@ public class AvailabilityPatternController {
     }
 
     @Operation(summary = "Create Availability Pattern")
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<AvailabilityPatternResponseDto> createAvailabilityPattern(
             @RequestBody @Valid AvailabilityPatternCreateDto dto
     ) {
-        return ResponseEntity.ok(availabilityPatternService.createAvailabilityPattern(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(availabilityPatternService.createAvailabilityPattern(dto));
     }
 
     @Operation(summary = "Update Availability Pattern by id")

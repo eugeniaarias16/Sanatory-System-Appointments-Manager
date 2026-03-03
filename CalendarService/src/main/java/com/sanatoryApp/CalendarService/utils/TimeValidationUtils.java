@@ -3,6 +3,7 @@ package com.sanatoryApp.CalendarService.utils;
 import com.sanatoryApp.CalendarService.exception.InvalidTimeRangeException;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Slf4j
@@ -41,6 +42,12 @@ public final class TimeValidationUtils {
             throw new InvalidTimeRangeException("End time must be after start time.");
         }
         log.debug("End time is correct.");
+    }
+
+    public static void validateDateRange(LocalDate startTime,LocalDate endDate){
+        if(endDate.isBefore(startTime)){
+            throw new InvalidTimeRangeException("End Date must be equals o after Start Date");
+        }
     }
 
     //Verify that the range represents a full day (without specific times).

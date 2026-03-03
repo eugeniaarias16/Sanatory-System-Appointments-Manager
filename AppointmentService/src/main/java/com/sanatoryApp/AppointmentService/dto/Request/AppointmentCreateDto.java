@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public record AppointmentCreateDto(
         @NotNull(message = "The doctor's ID is mandatory.")
@@ -28,6 +29,9 @@ public record AppointmentCreateDto(
         @NotNull(message = "The date is mandatory.")
         @FutureOrPresent(message = "The date must be present or future.")
         LocalDate date,
+
+        @NotNull(message = "The time is mandatory.")
+        LocalTime time,
 
         @Size(max = 200, message = "Notes cannot exceed 200 characters.")
         @Schema(description = "Additional notes (optional)")

@@ -17,11 +17,10 @@ public record AppointmentTypeCreateDto(
         int durationMin,
 
         @NotNull
-        @Positive(message = "Buffer time cannot be negative")
+        @Positive(message = "Buffer Time must be positive.")
         int bufferTimeMin,
 
         @NotNull
-        @Positive
         @DecimalMin(value = "1.0", message = "Price must be at least 1.00")
         BigDecimal basePrice
 ) {
